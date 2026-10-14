@@ -3,469 +3,354 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard BTC/USD & Noticias Macro</title>
+  <title>Indicador BTCUSD en Tiempo Real - Binance WS + Macro</title>
   <style>
     :root {
-      --bg-color: #0b0e11;
-      --card-bg: #1e2329;
-      --card-border: #2b313a;
-      --text-main: #eaecef;
-      --text-muted: #848e9c;
+      --bg: #12161f;
+      --card-bg: #1e232d;
+      --text: #eaecef;
       --green: #0ecb81;
       --red: #f6465d;
       --yellow: #f0b90b;
-      --blue: #1e88e5;
+      --gray: #848e9c;
+      --border: #2b313a;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      padding: 24px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
       display: flex;
       justify-content: center;
     }
-
     .container {
-      max-width: 1050px;
+      max-width: 950px;
       width: 100%;
     }
-
     .header {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
-
-    .header h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin-bottom: 8px;
+    .status {
+      font-size: 0.85em;
+      color: var(--gray);
+      margin-top: 5px;
     }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      color: var(--green);
-      background: rgba(14, 203, 129, 0.1);
-      padding: 4px 12px;
-      border-radius: 20px;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background-color: var(--green);
-      border-radius: 50%;
-    }
-
-    .grid-top {
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
     }
-
     .card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
+      background: var(--card-bg);
+      border-radius: 8px;
       padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
     }
-
-    .card-title {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 8px;
+    .price-title {
+      font-size: 0.85em;
+      color: var(--gray);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-
     .price-value {
-      font-size: 2.2rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+      font-size: 1.8em;
+      font-weight: bold;
+      margin: 10px 0;
     }
-
-    .price-change {
-      font-size: 0.9rem;
-      margin-top: 6px;
-      font-weight: 600;
-    }
-
-    .signal-box {
+    .signal-card {
       text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      border: 2px solid var(--card-border);
+      border: 2px solid var(--gray);
       transition: all 0.3s ease;
     }
-
     .signal-text {
-      font-size: 2rem;
-      font-weight: 800;
-      margin-top: 6px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-size: 1.9em;
+      font-weight: bold;
+      margin-top: 10px;
     }
+    .up { color: var(--green); border-color: var(--green); }
+    .down { color: var(--red); border-color: var(--red); }
+    .neutral { color: var(--yellow); border-color: var(--yellow); }
 
-    .signal-up {
-      border-color: var(--green);
-      color: var(--green);
-      background: rgba(14, 203, 129, 0.05);
-    }
-
-    .signal-down {
-      border-color: var(--red);
-      color: var(--red);
-      background: rgba(246, 70, 93, 0.05);
-    }
-
-    .signal-neutral {
-      border-color: var(--yellow);
-      color: var(--yellow);
-      background: rgba(240, 185, 11, 0.05);
-    }
-
-    .macro-section {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
+    .section {
+      background: var(--card-bg);
+      border-radius: 8px;
       padding: 20px;
+      margin-top: 20px;
+      border: 1px solid var(--border);
     }
-
-    .macro-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      gap: 10px;
+    h3 {
+      margin-top: 0;
+      color: var(--yellow);
     }
-
-    .macro-header h2 {
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    table {
+    .news-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.88rem;
+      margin-top: 15px;
+      font-size: 0.9em;
     }
-
-    th {
+    .news-table th, .news-table td {
+      border: 1px solid var(--border);
+      padding: 10px;
       text-align: left;
-      padding: 12px;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--card-border);
-      font-weight: 600;
     }
-
-    td {
-      padding: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      vertical-align: middle;
+    .news-table th {
+      background: #181d26;
+      color: var(--gray);
     }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    input[type="number"] {
-      background: #141821;
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      padding: 6px 10px;
-      border-radius: 6px;
-      width: 80px;
-      font-size: 0.88rem;
-    }
-
-    input[type="number"]:focus {
-      outline: 1px solid var(--blue);
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 4px 8px;
+    select {
+      background: #2b313a;
+      color: var(--text);
+      border: 1px solid var(--gray);
+      padding: 6px;
       border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 700;
+      width: 100%;
     }
-
-    .badge-bullish { background: rgba(14, 203, 129, 0.15); color: var(--green); }
-    .badge-bearish { background: rgba(246, 70, 93, 0.15); color: var(--red); }
-    .badge-neutral { background: rgba(240, 185, 11, 0.15); color: var(--yellow); }
-    .badge-pending { background: rgba(132, 142, 156, 0.15); color: var(--text-muted); }
-
-    .summary-bar {
-      display: flex;
-      gap: 16px;
-      background: #141821;
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-top: 16px;
-      font-size: 0.85rem;
-      color: var(--text-muted);
+    .badge {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.8em;
+      display: inline-block;
     }
-
-    .summary-bar span strong {
-      color: var(--text-main);
-    }
+    .badge-bull { background: rgba(14, 203, 129, 0.2); color: var(--green); }
+    .badge-bear { background: rgba(246, 70, 93, 0.2); color: var(--red); }
+    .badge-neut { background: rgba(240, 185, 11, 0.2); color: var(--yellow); }
   </style>
 </head>
 <body>
 
 <div class="container">
   <div class="header">
-    <h1>Dashboard BTC/USD con WebSocket Realtime</h1>
-    <div class="status-badge">
-      <div class="status-dot" id="status-dot"></div>
-      <span id="ws-status">Conectando a Kraken WS (BTC/USD)...</span>
-    </div>
+    <h1>Dashboard BTCUSD con Binance WebSocket</h1>
+    <p class="status" id="ws-status">Conectando a Binance (BTC/USDT)...</p>
   </div>
 
-  <!-- Bloque Superior de Métricas -->
-  <div class="grid-top">
+  <div class="grid">
     <div class="card">
-      <div class="card-title">Precio BTC/USD (Tiempo Real)</div>
+      <div class="price-title">Precio Activo: BTCUSD (Tiempo Real)</div>
       <div class="price-value" id="btc-price">$ --.--</div>
-      <div class="price-change" id="price-change">Rango 24h: --</div>
+      <div id="price-change">24h: --%</div>
     </div>
 
     <div class="card">
-      <div class="card-title">Fuerza Técnica (Posición Rango 24h)</div>
-      <div class="price-value" id="tech-score">-- / 100</div>
-      <div class="price-change" id="tech-desc" style="color: var(--text-muted)">Calculando estructura de mercado...</div>
+      <div class="price-title">Fuerza Técnica (Momentum Intra-día)</div>
+      <div class="price-value" id="rsi-val">-- / 100</div>
+      <div id="tech-desc">Calculando rango de precios...</div>
     </div>
 
-    <div class="card signal-box signal-neutral" id="signal-box">
-      <div class="card-title">SEÑAL GLOBAL COMBINADA BTC/USD</div>
-      <div class="signal-text" id="signal-output">EVALUANDO ↔️</div>
+    <div class="card signal-card" id="signal-box">
+      <div class="price-title">SEÑAL RESULTANTE PARA BTCUSD</div>
+      <div class="signal-text" id="signal-output">EVALUANDO</div>
     </div>
   </div>
 
-  <!-- Bloque del Calendario Económico con Auto-Detección Macro -->
-  <div class="macro-section">
-    <div class="macro-header">
-      <h2>Calendario Económico Macro (Semanal EE. UU. / USD)</h2>
-      <span style="font-size: 0.8rem; color: var(--text-muted);">Edita el valor 'Actual' para recalcular el impacto directo en BTC/USD</span>
-    </div>
+  <div class="section">
+    <h3>Calendario de Noticias Económicas (EE. UU.) - Esta Semana</h3>
+    <p style="font-size: 0.9em; color: var(--gray);">
+      Selecciona el resultado publicado frente a la previsión. El sistema actualizará el sesgo macro y la señal predicha para BTCUSD en tiempo real.
+    </p>
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Evento Macro (USD)</th>
-            <th>Anterior</th>
-            <th>Previsión</th>
-            <th>Actual</th>
-            <th>Impacto BTC/USD Esperado</th>
-          </tr>
-        </thead>
-        <tbody id="news-table-body">
-          <!-- Rellenado dinámicamente por JS -->
-        </tbody>
-      </table>
-    </div>
+    <table class="news-table">
+      <thead>
+        <tr>
+          <th>Evento Macro</th>
+          <th>Previsión</th>
+          <th>Estado / Resultado Publicado</th>
+          <th>Sesgo BTC</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>IPC General (Anual)</strong><br><small>Índice de Precios al Consumidor</small></td>
+          <td>3,6%</td>
+          <td>
+            <select id="news-cpi" onchange="evaluateSignal()">
+              <option value="bearish" selected>Publicado: 3,7% (Mayor a previsión) - ALTA INFLACIÓN</option>
+              <option value="bullish">Menor a la previsión (&lt; 3.6%)</option>
+              <option value="neutral">Igual a la previsión (3.6%)</option>
+            </select>
+          </td>
+          <td><span id="bias-cpi" class="badge badge-bear">BAJA ⬇️</span></td>
+        </tr>
 
-    <div class="summary-bar">
-      <span>Noticias Bajistas: <strong id="cnt-bearish" style="color: var(--red)">0</strong></span>
-      <span>Noticias Alcistas: <strong id="cnt-bullish" style="color: var(--green)">0</strong></span>
-      <span>Pendientes: <strong id="cnt-pending">0</strong></span>
-    </div>
+        <tr>
+          <td><strong>IPC Subyacente (Mensual)</strong><br><small>Excluye alimentos y energía</small></td>
+          <td>0,2%</td>
+          <td>
+            <select id="news-core-cpi" onchange="evaluateSignal()">
+              <option value="bearish" selected>Publicado: 0,3% (Mayor a previsión)</option>
+              <option value="bullish">Menor a la previsión (&lt; 0.2%)</option>
+              <option value="neutral">Igual a la previsión (0.2%)</option>
+            </select>
+          </td>
+          <td><span id="bias-core-cpi" class="badge badge-bear">BAJA ⬇️</span></td>
+        </tr>
+
+        <tr>
+          <td><strong>IPP / PPI (Mensual)</strong><br><small>Precios de Producción</small></td>
+          <td>0,3%</td>
+          <td>
+            <select id="news-ppi" onchange="evaluateSignal()">
+              <option value="neutral" selected>Pendiente de publicación</option>
+              <option value="bullish">Menor a la previsión (&lt; 0.3%) - Inflación Productor Baja</option>
+              <option value="bearish">Mayor a la previsión (&gt; 0.3%) - Inflación Productor Alta</option>
+            </select>
+          </td>
+          <td><span id="bias-ppi" class="badge badge-neut">NEUTRAL ↔️</span></td>
+        </tr>
+
+        <tr>
+          <td><strong>Nóminas no Agrícolas (NFP)</strong><br><small>Creación de Empleo</small></td>
+          <td>170K</td>
+          <td>
+            <select id="news-nfp" onchange="evaluateSignal()">
+              <option value="neutral" selected>Pendiente de publicación</option>
+              <option value="bullish">Menor a la previsión (&lt; 170K) - Desaceleración Laboral</option>
+              <option value="bearish">Mayor a la previsión (&gt; 170K) - Mercado laboral sobrecalentado</option>
+            </select>
+          </td>
+          <td><span id="bias-nfp" class="badge badge-neut">NEUTRAL ↔️</span></td>
+        </tr>
+
+        <tr>
+          <td><strong>Ventas Minoristas (Mensual)</strong><br><small>Gasto del Consumidor</small></td>
+          <td>0,3%</td>
+          <td>
+            <select id="news-retail" onchange="evaluateSignal()">
+              <option value="neutral" selected>Pendiente de publicación</option>
+              <option value="bullish">Menor a la previsión (&lt; 0.3%)</option>
+              <option value="bearish">Mayor a la previsión (&gt; 0.3%)</option>
+            </select>
+          </td>
+          <td><span id="bias-retail" class="badge badge-neut">NEUTRAL ↔️</span></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
 <script>
-  // Estructura de Noticias Macro que afectan directamente al Dólar (USD) y BTC
-  const macroEvents = [
-    { id: 'ipc_yoy', date: '14 Oct - 06:30', name: 'IPC General EE. UU. (Anual)', prev: 3.4, forecast: 3.6, actual: 3.7, inverse: true },
-    { id: 'ipc_core', date: '14 Oct - 06:30', name: 'IPC Subyacente EE. UU. (Anual)', prev: 2.4, forecast: 2.5, actual: 2.6, inverse: true },
-    { id: 'ppi_mom', date: '15 Oct - 06:30', name: 'IPP Precios Producción (Mensual)', prev: 0.2, forecast: 0.3, actual: null, inverse: true },
-    { id: 'claims', date: '16 Oct - 06:30', name: 'Solicitudes de Desempleo EE. UU.', prev: 225, forecast: 230, actual: null, inverse: false },
-    { id: 'retail', date: '16 Oct - 06:30', name: 'Ventas Minoristas EE. UU. (Mensual)', prev: 0.1, forecast: 0.3, actual: null, inverse: false },
-    { id: 'umich', date: '17 Oct - 09:00', name: 'Sentimiento del Consumidor Univ. Michigan', prev: 68.9, forecast: 70.0, actual: null, inverse: false }
-  ];
-
   let currentPrice = 0;
-  let positionInRange = 50;
+  let prevPrice = 0;
+  let priceTrend = 0;
 
-  // Renderizado del Calendario Económico
-  function renderNewsTable() {
-    const tbody = document.getElementById('news-table-body');
-    tbody.innerHTML = '';
-
-    let cntBearish = 0;
-    let cntBullish = 0;
-    let cntPending = 0;
-
-    macroEvents.forEach((event, index) => {
-      let impactBadge = '<span class="badge badge-pending">PENDIENTE</span>';
-      
-      if (event.actual !== null && !isNaN(event.actual)) {
-        let isBullish = false;
-        let isBearish = false;
-
-        if (event.inverse) {
-          if (event.actual < event.forecast) isBullish = true;
-          else if (event.actual > event.forecast) isBearish = true;
-        } else {
-          if (event.actual > event.forecast) isBullish = true;
-          else if (event.actual < event.forecast) isBearish = true;
-        }
-
-        if (isBullish) {
-          impactBadge = '<span class="badge badge-bullish">SUBIRÁ ⬆️</span>';
-          cntBullish++;
-        } else if (isBearish) {
-          impactBadge = '<span class="badge badge-bearish">BAJARÁ ⬇️</span>';
-          cntBearish++;
-        } else {
-          impactBadge = '<span class="badge badge-neutral">NEUTRAL ↔️</span>';
-        }
-      } else {
-        cntPending++;
-      }
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${event.date}</td>
-        <td><strong>${event.name}</strong></td>
-        <td>${event.prev}%</td>
-        <td>${event.forecast}%</td>
-        <td>
-          <input type="number" step="0.1" value="${event.actual !== null ? event.actual : ''}" 
-                 placeholder="--" onchange="updateActualValue(${index}, this.value)">
-        </td>
-        <td>${impactBadge}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    document.getElementById('cnt-bearish').innerText = cntBearish;
-    document.getElementById('cnt-bullish').innerText = cntBullish;
-    document.getElementById('cnt-pending').innerText = cntPending;
-
-    evaluateGlobalSignal(cntBullish, cntBearish);
-  }
-
-  function updateActualValue(index, value) {
-    if (value === '' || isNaN(value)) {
-      macroEvents[index].actual = null;
-    } else {
-      macroEvents[index].actual = parseFloat(value);
-    }
-    renderNewsTable();
-  }
-
-  // Evaluación de la Señal Global BTC/USD
-  function evaluateGlobalSignal(cntBullish, cntBearish) {
-    const signalBox = document.getElementById('signal-box');
-    const signalOutput = document.getElementById('signal-output');
-
-    let macroScore = cntBullish - cntBearish;
-    let totalScore = macroScore;
-
-    if (positionInRange > 65) totalScore += 1;
-    if (positionInRange < 35) totalScore -= 1;
-
-    signalBox.classList.remove('signal-up', 'signal-down', 'signal-neutral');
-
-    if (totalScore <= -1) {
-      signalOutput.innerText = 'BAJARÁ ⬇️';
-      signalBox.classList.add('signal-down');
-    } else if (totalScore >= 1) {
-      signalOutput.innerText = 'SUBIRÁ ⬆️';
-      signalBox.classList.add('signal-up');
-    } else {
-      signalOutput.innerText = 'NEUTRAL ↔️';
-      signalBox.classList.add('signal-neutral');
-    }
-  }
-
-  // Conexión WebSocket para el par real BTC/USD vía Kraken API
-  const wsUrl = "wss://ws.kraken.com";
+  // Conexión WebSocket al par BTCUSDT en Binance (Equivalente al par spot BTCUSD)
+  const wsUrl = "wss://stream.binance.com:9443/ws/btcusdt@ticker";
   const ws = new WebSocket(wsUrl);
 
-  const priceElem = document.getElementById('btc-price');
-  const changeElem = document.getElementById('price-change');
-  const wsStatusElem = document.getElementById('ws-status');
-  const statusDot = document.getElementById('status-dot');
-  const techScoreElem = document.getElementById('tech-score');
-  const techDescElem = document.getElementById('tech-desc');
+  const priceElem = document.getElementById("btc-price");
+  const changeElem = document.getElementById("price-change");
+  const statusElem = document.getElementById("ws-status");
+  const techDescElem = document.getElementById("tech-desc");
+  const rsiValElem = document.getElementById("rsi-val");
 
   ws.onopen = () => {
-    wsStatusElem.innerText = "Conectado en tiempo real a Kraken WS (BTC/USD)";
-    wsStatusElem.style.color = "var(--green)";
-    statusDot.style.backgroundColor = "var(--green)";
-
-    // Suscripción al par XBT/USD (BTC/USD en Kraken)
-    const subscribeMsg = {
-      event: "subscribe",
-      pair: ["XBT/USD"],
-      subscription: { name: "ticker" }
-    };
-    ws.send(JSON.stringify(subscribeMsg));
+    statusElem.innerText = "🟢 Conectado en tiempo real a Binance WS (BTCUSD / BTCUSDT)";
+    statusElem.style.color = "#0ecb81";
   };
 
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
+    
+    prevPrice = currentPrice;
+    currentPrice = parseFloat(data.c);
+    const priceChangePercent = parseFloat(data.P);
+    const highPrice = parseFloat(data.h);
+    const lowPrice = parseFloat(data.l);
 
-    // Filtrar la respuesta del ticker de Kraken
-    if (Array.isArray(data) && data[1] && data[1].c) {
-      const ticker = data[1];
-      currentPrice = parseFloat(ticker.c[0]); // Último precio operado BTC/USD
-      const lowPrice = parseFloat(ticker.l[1]); // Mínimo de 24h
-      const highPrice = parseFloat(ticker.h[1]); // Máximo de 24h
+    // Actualizar vista del precio
+    priceElem.innerText = `$${currentPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    changeElem.innerText = `24h: ${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent}%`;
+    changeElem.style.color = priceChangePercent >= 0 ? "var(--green)" : "var(--red)";
 
-      priceElem.innerText = `$${currentPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-      changeElem.innerText = `Min: $${lowPrice.toLocaleString()} | Max: $${highPrice.toLocaleString()}`;
-
-      // Posición técnica dentro del rango diario
-      const range = highPrice - lowPrice;
-      positionInRange = range > 0 ? ((currentPrice - lowPrice) / range) * 100 : 50;
-      techScoreElem.innerText = `${positionInRange.toFixed(0)} / 100`;
-
-      if (positionInRange > 65) {
-        techDescElem.innerText = "Presión de compra (Cerca de máximos de 24h)";
-        techDescElem.style.color = "var(--green)";
-      } else if (positionInRange < 35) {
-        techDescElem.innerText = "Presión de venta (Cerca de mínimos de 24h)";
-        techDescElem.style.color = "var(--red)";
-      } else {
-        techDescElem.innerText = "Consolidación en rango medio";
-        techDescElem.style.color = "var(--text-muted)";
-      }
-
-      renderNewsTable();
+    if (prevPrice > 0) {
+      priceTrend = currentPrice - prevPrice;
     }
+
+    // Calcular posición dentro del rango del día (0-100)
+    const range = highPrice - lowPrice;
+    const positionInRange = range > 0 ? ((currentPrice - lowPrice) / range) * 100 : 50;
+    rsiValElem.innerText = `${positionInRange.toFixed(0)} / 100`;
+
+    if (positionInRange > 70) {
+      techDescElem.innerText = "Presión de compra (Cerca del máximo diario)";
+    } else if (positionInRange < 30) {
+      techDescElem.innerText = "Presión de venta (Cerca del mínimo diario)";
+    } else {
+      techDescElem.innerText = "Consolidación en rango medio";
+    }
+
+    evaluateSignal();
   };
 
   ws.onerror = () => {
-    wsStatusElem.innerText = "Error de conexión con Kraken WS";
-    wsStatusElem.style.color = "var(--red)";
-    statusDot.style.backgroundColor = "var(--red)";
+    statusElem.innerText = "🔴 Error de conexión con el WebSocket de Binance";
+    statusElem.style.color = "#f6465d";
   };
 
-  // Cargar tabla inicial
-  renderNewsTable();
+  function updateBadge(badgeId, val) {
+    const badge = document.getElementById(badgeId);
+    if (val === "bullish") {
+      badge.className = "badge badge-bull";
+      badge.innerText = "SUBE ⬆️";
+    } else if (val === "bearish") {
+      badge.className = "badge badge-bear";
+      badge.innerText = "BAJA ⬇️";
+    } else {
+      badge.className = "badge badge-neut";
+      badge.innerText = "NEUTRAL ↔️";
+    }
+  }
+
+  function evaluateSignal() {
+    // Obtener valores seleccionados en la tabla macro
+    const cpiVal = document.getElementById("news-cpi").value;
+    const coreCpiVal = document.getElementById("news-core-cpi").value;
+    const ppiVal = document.getElementById("news-ppi").value;
+    const nfpVal = document.getElementById("news-nfp").value;
+    const retailVal = document.getElementById("news-retail").value;
+
+    // Actualizar badges individuales
+    updateBadge("bias-cpi", cpiVal);
+    updateBadge("bias-core-cpi", coreCpiVal);
+    updateBadge("bias-ppi", ppiVal);
+    updateBadge("bias-nfp", nfpVal);
+    updateBadge("bias-retail", retailVal);
+
+    // Calcular puntaje acumulado
+    let score = 0;
+
+    const newsList = [cpiVal, coreCpiVal, ppiVal, nfpVal, retailVal];
+    newsList.forEach(val => {
+      if (val === "bullish") score += 2;
+      if (val === "bearish") score -= 2;
+    });
+
+    // Ponderación de tendencia del WebSocket de Binance en tiempo real
+    if (priceTrend > 0) score += 1;
+    if (priceTrend < 0) score -= 1;
+
+    // Renderizar señal final
+    const signalBox = document.getElementById("signal-box");
+    const signalOutput = document.getElementById("signal-output");
+
+    signalBox.classList.remove("up", "down", "neutral");
+
+    if (score >= 2) {
+      signalOutput.innerText = "SUBIRÁ ⬆️";
+      signalBox.classList.add("up");
+    } else if (score <= -2) {
+      signalOutput.innerText = "BAJARÁ ⬇️";
+      signalBox.classList.add("down");
+    } else {
+      signalOutput.innerText = "RANGO / NEUTRAL ↔️";
+      signalBox.classList.add("neutral");
+    }
+  }
 </script>
 
 </body>
