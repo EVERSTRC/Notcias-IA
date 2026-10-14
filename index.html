@@ -3,465 +3,573 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard BTC/USDT & Calendario Económico Macro</title>
+  <title>Dashboard BTC/USDT & Analytics Macro - Realtime Binance</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Font Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            binance: {
+              black: '#0b0e11',
+              dark: '#12161f',
+              card: '#1e232d',
+              border: '#2b313a',
+              green: '#0ecb81',
+              red: '#f6465d',
+              yellow: '#f0b90b',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    :root {
-      --bg-color: #0b0e11;
-      --card-bg: #1e2329;
-      --card-border: #2b313a;
-      --text-main: #eaecef;
-      --text-muted: #848e9c;
-      --green: #0ecb81;
-      --red: #f6465d;
-      --yellow: #f0b90b;
-      --blue: #1e88e5;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      padding: 24px;
-      display: flex;
-      justify-content: center;
+      font-family: 'Inter', sans-serif;
+      background-color: #0b0e11;
+      color: #eaecef;
+    }
+    
+    .pulse-green {
+      box-shadow: 0 0 10px rgba(14, 203, 129, 0.5);
+      animation: pulseGreen 2s infinite;
     }
 
-    .container {
-      max-width: 1050px;
-      width: 100%;
+    @keyframes pulseGreen {
+      0% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(14, 203, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0); }
     }
 
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
+    /* Custom scrollbar for table */
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
     }
-
-    .header h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin-bottom: 8px;
+    ::-webkit-scrollbar-track {
+      background: #12161f;
     }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      color: var(--green);
-      background: rgba(14, 203, 129, 0.1);
-      padding: 4px 12px;
-      border-radius: 20px;
+    ::-webkit-scrollbar-thumb {
+      background: #2b313a;
+      border-radius: 3px;
     }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background-color: var(--green);
-      border-radius: 50%;
-    }
-
-    .grid-top {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .card-title {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .price-value {
-      font-size: 2.2rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    .price-change {
-      font-size: 0.9rem;
-      margin-top: 6px;
-      font-weight: 600;
-    }
-
-    .signal-box {
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      border: 2px solid var(--card-border);
-      transition: all 0.3s ease;
-    }
-
-    .signal-text {
-      font-size: 2rem;
-      font-weight: 800;
-      margin-top: 6px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .signal-up {
-      border-color: var(--green);
-      color: var(--green);
-      background: rgba(14, 203, 129, 0.05);
-    }
-
-    .signal-down {
-      border-color: var(--red);
-      color: var(--red);
-      background: rgba(246, 70, 93, 0.05);
-    }
-
-    .signal-neutral {
-      border-color: var(--yellow);
-      color: var(--yellow);
-      background: rgba(240, 185, 11, 0.05);
-    }
-
-    .macro-section {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .macro-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .macro-header h2 {
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-    }
-
-    th {
-      text-align: left;
-      padding: 12px;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--card-border);
-      font-weight: 600;
-    }
-
-    td {
-      padding: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      vertical-align: middle;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    input[type="number"] {
-      background: #141821;
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      padding: 6px 10px;
-      border-radius: 6px;
-      width: 80px;
-      font-size: 0.88rem;
-    }
-
-    input[type="number"]:focus {
-      outline: 1px solid var(--blue);
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    .badge-bullish { background: rgba(14, 203, 129, 0.15); color: var(--green); }
-    .badge-bearish { background: rgba(246, 70, 93, 0.15); color: var(--red); }
-    .badge-neutral { background: rgba(240, 185, 11, 0.15); color: var(--yellow); }
-    .badge-pending { background: rgba(132, 142, 156, 0.15); color: var(--text-muted); }
-
-    .summary-bar {
-      display: flex;
-      gap: 16px;
-      background: #141821;
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-top: 16px;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .summary-bar span strong {
-      color: var(--text-main);
+    ::-webkit-scrollbar-thumb:hover {
+      background: #474d57;
     }
   </style>
 </head>
-<body>
+<body class="min-h-screen bg-binance-black text-gray-100 flex flex-col justify-between p-3 sm:p-6">
 
-<div class="container">
-  <div class="header">
-    <h1>Dashboard BTC/USDT con Binance WebSocket</h1>
-    <div class="status-badge">
-      <div class="status-dot" id="status-dot"></div>
-      <span id="ws-status">Conectando a Binance WS...</span>
+  <!-- Header & Status Bar -->
+  <header class="max-w-7xl mx-auto w-full mb-6">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-binance-dark p-4 rounded-2xl border border-binance-border shadow-xl">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-binance-yellow/10 rounded-xl border border-binance-yellow/30">
+          <svg class="w-7 h-7 text-binance-yellow" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+            BTC/USDT <span class="text-xs font-semibold px-2 py-0.5 rounded bg-binance-yellow/20 text-binance-yellow border border-binance-yellow/30">QUANT MACRO</span>
+          </h1>
+          <p class="text-xs text-gray-400">Trading Algorítmico & Motor de Análisis Fundamental</p>
+        </div>
+      </div>
+
+      <!-- Realtime Binance WS Indicator -->
+      <div class="flex items-center gap-3 bg-binance-black/60 px-4 py-2 rounded-xl border border-binance-border">
+        <div id="status-pulse" class="w-3 h-3 rounded-full bg-binance-green pulse-green"></div>
+        <div class="text-xs">
+          <div class="font-bold text-gray-200" id="ws-status">Conectando WebSocket...</div>
+          <div class="text-gray-500 font-mono text-[10px]" id="ws-endpoint">stream.binance.com:9443</div>
+        </div>
+      </div>
     </div>
-  </div>
+  </header>
 
-  <!-- Bloque Superior de Métricas -->
-  <div class="grid-top">
-    <div class="card">
-      <div class="card-title">Precio BTC/USDT (Tiempo Real)</div>
-      <div class="price-value" id="btc-price">$ --.--</div>
-      <div class="price-change" id="price-change">24h: --%</div>
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto w-full space-y-6 flex-grow">
+
+    <!-- Top Grid: Realtime Ticker, Tech Strength & Final Signal -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+
+      <!-- Realtime Price Card -->
+      <div class="md:col-span-4 bg-binance-card p-5 rounded-2xl border border-binance-border shadow-lg flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-binance-yellow/5 rounded-full blur-2xl pointer-events-none"></div>
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Precio BTC/USDT</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700">BINANCE SPOT</span>
+          </div>
+          <div id="btc-price" class="text-3xl sm:text-4xl font-black font-mono text-white tracking-tight my-1">
+            $ --.--
+          </div>
+          <div id="price-change-badge" class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg bg-gray-800 text-gray-300 border border-gray-700">
+            24h: --%
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-gray-800/80 text-xs font-mono">
+          <div>
+            <span class="text-gray-500 block text-[10px] uppercase">Máx 24h</span>
+            <span id="high-price" class="text-gray-200 font-semibold">$ --</span>
+          </div>
+          <div class="text-right">
+            <span class="text-gray-500 block text-[10px] uppercase">Mín 24h</span>
+            <span id="low-price" class="text-gray-200 font-semibold">$ --</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Position & Strength Bar -->
+      <div class="md:col-span-4 bg-binance-card p-5 rounded-2xl border border-binance-border shadow-lg flex flex-col justify-between">
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Posición en Rango 24h</span>
+            <span id="tech-percentage" class="text-xs font-bold font-mono text-binance-yellow">50%</span>
+          </div>
+          <div class="text-2xl font-bold font-mono text-white mb-2" id="range-status">
+            Calculando...
+          </div>
+          <p id="tech-desc" class="text-xs text-gray-400">Evaluando presión compradora/vendedora intradía...</p>
+        </div>
+
+        <div class="mt-4 space-y-2">
+          <div class="w-full bg-binance-black rounded-full h-3 p-0.5 border border-gray-800 overflow-hidden">
+            <div id="tech-bar" class="bg-binance-yellow h-full rounded-full transition-all duration-300" style="width: 50%"></div>
+          </div>
+          <div class="flex justify-between text-[10px] font-mono text-gray-500">
+            <span>Soporte (0)</span>
+            <span>Centro (50)</span>
+            <span>Resistencia (100)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Combined Engine Final Signal Box -->
+      <div id="signal-card" class="md:col-span-4 bg-binance-card p-5 rounded-2xl border-2 border-gray-700 shadow-xl flex flex-col justify-between text-center transition-all duration-500 relative">
+        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Señal Cuantitativa Final</span>
+        
+        <div class="my-auto py-3">
+          <div id="signal-output" class="text-3xl sm:text-4xl font-black tracking-wider text-gray-300 animate-pulse">
+            EVALUANDO...
+          </div>
+          <p id="signal-reason" class="text-xs text-gray-400 mt-2 max-w-xs mx-auto">
+            Procesando flujo de órdenes de Binance y datos macroeconómicos...
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs bg-binance-black/80 p-2.5 rounded-xl border border-gray-800">
+          <div>
+            <span class="text-gray-500 text-[10px] block uppercase">Puntaje Macro</span>
+            <span id="score-macro" class="font-bold font-mono text-white">0.0</span>
+          </div>
+          <div>
+            <span class="text-gray-500 text-[10px] block uppercase">Puntaje Técnico</span>
+            <span id="score-tech" class="font-bold font-mono text-white">0.0</span>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="card">
-      <div class="card-title">Fuerza Técnica (Posición Rango 24h)</div>
-      <div class="price-value" id="tech-score">-- / 100</div>
-      <div class="price-change" id="tech-desc" style="color: var(--text-muted)">Calculando estructura de mercado...</div>
-    </div>
-
-    <div class="card signal-box signal-neutral" id="signal-box">
-      <div class="card-title">SEÑAL GLOBAL COMBINADA</div>
-      <div class="signal-text" id="signal-output">EVALUANDO ↔️</div>
-    </div>
-  </div>
-
-  <!-- Bloque del Calendario Económico con Auto-Detección -->
-  <div class="macro-section">
-    <div class="macro-header">
-      <h2>Calendario Económico Macro (Semanal)</h2>
-      <span style="font-size: 0.8rem; color: var(--text-muted);">Los datos editados recalculan la señal automáticamente</span>
-    </div>
-
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Evento Macro</th>
-            <th>Anterior</th>
-            <th>Previsión</th>
-            <th>Actual</th>
-            <th>Impacto BTC Esperado</th>
-          </tr>
-        </thead>
-        <tbody id="news-table-body">
-          <!-- Rellenado dinámicamente por JS -->
-        </tbody>
-      </table>
-    </div>
-
-    <div class="summary-bar">
-      <span>Noticias Bajistas: <strong id="cnt-bearish" style="color: var(--red)">0</strong></span>
-      <span>Noticias Alcistas: <strong id="cnt-bullish" style="color: var(--green)">0</strong></span>
-      <span>Pendientes: <strong id="cnt-pending">0</strong></span>
-    </div>
-  </div>
-</div>
-
-<script>
-  // Estructura de Noticias Macro para la Semana (Octubre 2026)
-  const macroEvents = [
-    { id: 'ipc_yoy', date: '14 Oct - 06:30', name: 'IPC General (Anual)', prev: 3.4, forecast: 3.6, actual: 3.7, inverse: true },
-    { id: 'ipc_core', date: '14 Oct - 06:30', name: 'IPC Subyacente (Anual)', prev: 2.4, forecast: 2.5, actual: 2.6, inverse: true },
-    { id: 'ppi_mom', date: '15 Oct - 06:30', name: 'IPP Precios Producción (Mensual)', prev: 0.2, forecast: 0.3, actual: null, inverse: true },
-    { id: 'claims', date: '16 Oct - 06:30', name: 'Solicitudes de Desempleo', prev: 225, forecast: 230, actual: null, inverse: false },
-    { id: 'retail', date: '16 Oct - 06:30', name: 'Ventas Minoristas (Mensual)', prev: 0.1, forecast: 0.3, actual: null, inverse: false },
-    { id: 'umich', date: '17 Oct - 09:00', name: 'Sentimiento del Consumidor Univ. Michigan', prev: 68.9, forecast: 70.0, actual: null, inverse: false }
-  ];
-
-  let currentPrice = 0;
-  let priceTrend = 0;
-  let positionInRange = 50;
-
-  // Renderizado del Calendario Económico
-  function renderNewsTable() {
-    const tbody = document.getElementById('news-table-body');
-    tbody.innerHTML = '';
-
-    let cntBearish = 0;
-    let cntBullish = 0;
-    let cntPending = 0;
-
-    macroEvents.forEach((event, index) => {
-      let impactBadge = '<span class="badge badge-pending">PENDIENTE</span>';
+    <!-- Macroeconomic Calendar & Editable Inputs Section -->
+    <div class="bg-binance-card rounded-2xl p-5 sm:p-6 border border-binance-border shadow-xl space-y-4">
       
-      if (event.actual !== null && !isNaN(event.actual)) {
-        // Regla: Para inflación/IPP (inverse=true), Actual > Previsión es Malo (BAJA)
-        // Para empleo/ventas/sentimiento (inverse=false), Actual < Previsión es Malo (BAJA)
-        let isBullish = false;
-        let isBearish = false;
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-gray-800">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <span>🌐</span> Calendario Económico Macro (Octubre 2026)
+          </h2>
+          <p class="text-xs text-gray-400">
+            Ingresa o modifica los datos actuales de las publicaciones para recalcular el sesgo macroeconómico.
+          </p>
+        </div>
 
-        if (event.inverse) {
-          if (event.actual < event.forecast) isBullish = true;
-          else if (event.actual > event.forecast) isBearish = true;
-        } else {
-          if (event.actual > event.forecast) isBullish = true;
-          else if (event.actual < event.forecast) isBearish = true;
-        }
+        <button onclick="resetToDefaults()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition">
+          ↺ Restablecer Valores
+        </button>
+      </div>
 
-        if (isBullish) {
-          impactBadge = '<span class="badge badge-bullish">SUBIRÁ ⬆️</span>';
-          cntBullish++;
-        } else if (isBearish) {
-          impactBadge = '<span class="badge badge-bearish">BAJARÁ ⬇️</span>';
-          cntBearish++;
-        } else {
-          impactBadge = '<span class="badge badge-neutral">NEUTRAL ↔️</span>';
-        }
-      } else {
-        cntPending++;
+      <!-- Macro News Responsive Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[700px]">
+          <thead>
+            <tr class="text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-800 bg-binance-dark/50">
+              <th class="py-3 px-3">Fecha / Hora</th>
+              <th class="py-3 px-3">Evento Macro</th>
+              <th class="py-3 px-3 text-center">Previsión</th>
+              <th class="py-3 px-3 text-center">Dato Actual (Editable)</th>
+              <th class="py-3 px-3 text-center">Impacto Calculado</th>
+              <th class="py-3 px-3 text-right">Dirección BTC</th>
+            </tr>
+          </thead>
+          <tbody id="macro-tbody" class="divide-y divide-gray-800/60 text-sm">
+            <!-- Dynamic JS Row Insertion -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Macro Logic Explanatory Footer Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 text-xs">
+        <div class="bg-binance-dark p-3 rounded-xl border border-gray-800">
+          <span class="text-binance-green font-bold block mb-1">🟢 Inflación / Costos Menores:</span>
+          <p class="text-gray-400">Si el IPC/IPP es menor a la previsión, aumenta la expectativa de bajas de tasas por la Fed (Bullish para BTC).</p>
+        </div>
+        <div class="bg-binance-dark p-3 rounded-xl border border-gray-800">
+          <span class="text-binance-red font-bold block mb-1">🔴 Inflación / Costos Mayores:</span>
+          <p class="text-gray-400">Si el IPC/IPP es mayor a la previsión, la Fed mantendrá tasas altas por más tiempo (Bearish para BTC).</p>
+        </div>
+        <div class="bg-binance-dark p-3 rounded-xl border border-gray-800">
+          <span class="text-binance-yellow font-bold block mb-1">🟡 Empleo & Sentimiento:</span>
+          <p class="text-gray-400">Peticiones de desempleo altas sugieren desaceleración económica, forzando liquidez macro positiva para crypto.</p>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="max-w-7xl mx-auto w-full mt-8 pt-4 border-t border-gray-800/60 text-center text-xs text-gray-500">
+    <p>Dashboard Cuantitativo BTC/USDT • Datos de mercado obtenidos en tiempo real de Binance Public WebSocket Stream.</p>
+  </footer>
+
+  <!-- Dashboard Engine Logic -->
+  <script>
+    // --- Initial Macro Events Database (October 2026) ---
+    const defaultMacroEvents = [
+      {
+        id: "cpi_sub",
+        date: "14 Oct - 06:30",
+        name: "IPC Subyacente (Anual) (Sep)",
+        forecast: 2.5,
+        actual: 2.6,
+        unit: "%",
+        type: "inflation_direct", // High = Bearish for BTC
+      },
+      {
+        id: "cpi_gen",
+        date: "14 Oct - 06:30",
+        name: "IPC General (Anual) (Sep)",
+        forecast: 3.6,
+        actual: 3.7,
+        unit: "%",
+        type: "inflation_direct",
+      },
+      {
+        id: "ppi_mensual",
+        date: "15 Oct - 06:30",
+        name: "IPP Precios de Producción (Mensual)",
+        forecast: 0.2,
+        actual: 0.3,
+        unit: "%",
+        type: "inflation_direct",
+      },
+      {
+        id: "retail_sales",
+        date: "15 Oct - 06:30",
+        name: "Ventas Minoristas (Mensual)",
+        forecast: 0.3,
+        actual: 0.1,
+        unit: "%",
+        type: "growth_direct", // Lower growth = Fed cuts = Bullish for BTC
+      },
+      {
+        id: "jobless_claims",
+        date: "15 Oct - 06:30",
+        name: "Nuevas peticiones de desempleo",
+        forecast: 225,
+        actual: 238,
+        unit: "K",
+        type: "unemployment_direct", // Higher claims = Cooling labor = Bullish for BTC
+      },
+      {
+        id: "permits",
+        date: "16 Oct - 06:30",
+        name: "Permisos de Construcción",
+        forecast: 1.45,
+        actual: 1.42,
+        unit: "M",
+        type: "growth_direct",
+      },
+      {
+        id: "michigan_sentiment",
+        date: "16 Oct - 08:00",
+        name: "Sentimiento Univ. de Michigan",
+        forecast: 68.0,
+        actual: 68.0,
+        unit: "pts",
+        type: "growth_direct",
       }
+    ];
 
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${event.date}</td>
-        <td><strong>${event.name}</strong></td>
-        <td>${event.prev}%</td>
-        <td>${event.forecast}%</td>
-        <td>
-          <input type="number" step="0.1" value="${event.actual !== null ? event.actual : ''}" 
-                 placeholder="--" onchange="updateActualValue(${index}, this.value)">
-        </td>
-        <td>${impactBadge}</td>
-      `;
-      tbody.appendChild(tr);
+    // Deep copy of macro data
+    let macroData = JSON.parse(JSON.stringify(defaultMacroEvents));
+
+    // Realtime variables
+    let currentPrice = 0;
+    let prevPrice = 0;
+    let high24h = 0;
+    let low24h = 0;
+    let microTrend = 0;
+
+    // Element References
+    const btcPriceElem = document.getElementById("btc-price");
+    const priceBadgeElem = document.getElementById("price-change-badge");
+    const highPriceElem = document.getElementById("high-price");
+    const lowPriceElem = document.getElementById("low-price");
+    const techPercentageElem = document.getElementById("tech-percentage");
+    const rangeStatusElem = document.getElementById("range-status");
+    const techDescElem = document.getElementById("tech-desc");
+    const techBarElem = document.getElementById("tech-bar");
+    const wsStatusElem = document.getElementById("ws-status");
+    const statusPulseElem = document.getElementById("status-pulse");
+
+    // Init App
+    window.addEventListener("DOMContentLoaded", () => {
+      renderMacroTable();
+      connectBinanceWebSocket();
     });
 
-    document.getElementById('cnt-bearish').innerText = cntBearish;
-    document.getElementById('cnt-bullish').innerText = cntBullish;
-    document.getElementById('cnt-pending').innerText = cntPending;
+    // Binance WebSocket Connection
+    function connectBinanceWebSocket() {
+      const wsUrl = "wss://stream.binance.com:9443/ws/btcusdt@ticker";
+      const ws = new WebSocket(wsUrl);
 
-    evaluateGlobalSignal(cntBullish, cntBearish);
-  }
+      ws.onopen = () => {
+        wsStatusElem.innerText = "Binance WS Conectado";
+        wsStatusElem.className = "font-bold text-binance-green";
+        statusPulseElem.className = "w-3 h-3 rounded-full bg-binance-green pulse-green";
+      };
 
-  function updateActualValue(index, value) {
-    if (value === '' || isNaN(value)) {
-      macroEvents[index].actual = null;
-    } else {
-      macroEvents[index].actual = parseFloat(value);
-    }
-    renderNewsTable();
-  }
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        
+        prevPrice = currentPrice;
+        currentPrice = parseFloat(data.c);
+        const changePercent = parseFloat(data.P);
+        high24h = parseFloat(data.h);
+        low24h = parseFloat(data.l);
 
-  // Evaluación de la Señal Global (Técnica + Macro)
-  function evaluateGlobalSignal(cntBullish, cntBearish) {
-    const signalBox = document.getElementById('signal-box');
-    const signalOutput = document.getElementById('signal-output');
+        // Update Ticker UI
+        btcPriceElem.innerText = `$${currentPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        
+        priceBadgeElem.innerText = `24h: ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+        if (changePercent >= 0) {
+          priceBadgeElem.className = "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-950/80 text-binance-green border border-emerald-800";
+        } else {
+          priceBadgeElem.className = "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg bg-rose-950/80 text-binance-red border border-rose-800";
+        }
 
-    let macroScore = cntBullish - cntBearish;
-    let totalScore = macroScore;
+        highPriceElem.innerText = `$${high24h.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+        lowPriceElem.innerText = `$${low24h.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
 
-    // Añadir factor técnico (Posición en el rango de 24h)
-    if (positionInRange > 65) totalScore += 1;
-    if (positionInRange < 35) totalScore -= 1;
+        // Micro-trend calculation
+        if (prevPrice > 0) {
+          microTrend = currentPrice - prevPrice;
+        }
 
-    signalBox.classList.remove('signal-up', 'signal-down', 'signal-neutral');
+        // Calculate Position in 24h Range
+        const range = high24h - low24h;
+        const position = range > 0 ? ((currentPrice - low24h) / range) * 100 : 50;
 
-    if (totalScore <= -1) {
-      signalOutput.innerText = 'BAJARÁ ⬇️';
-      signalBox.classList.add('signal-down');
-    } else if (totalScore >= 1) {
-      signalOutput.innerText = 'SUBIRÁ ⬆️';
-      signalBox.classList.add('signal-up');
-    } else {
-      signalOutput.innerText = 'NEUTRAL ↔️';
-      signalBox.classList.add('signal-neutral');
-    }
-  }
+        updateTechnicalUI(position);
+        calculateFinalSignal(position);
+      };
 
-  // Conexión WebSocket con Binance
-  const wsUrl = "wss://stream.binance.com:9443/ws/btcusdt@ticker";
-  const ws = new WebSocket(wsUrl);
+      ws.onerror = () => {
+        wsStatusElem.innerText = "Error de Conexión";
+        wsStatusElem.className = "font-bold text-binance-red";
+        statusPulseElem.className = "w-3 h-3 rounded-full bg-binance-red";
+      };
 
-  const priceElem = document.getElementById('btc-price');
-  const changeElem = document.getElementById('price-change');
-  const wsStatusElem = document.getElementById('ws-status');
-  const statusDot = document.getElementById('status-dot');
-  const techScoreElem = document.getElementById('tech-score');
-  const techDescElem = document.getElementById('tech-desc');
-
-  ws.onopen = () => {
-    wsStatusElem.innerText = "Conectado en tiempo real a Binance WS";
-    wsStatusElem.style.color = "var(--green)";
-    statusDot.style.backgroundColor = "var(--green)";
-  };
-
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-
-    currentPrice = parseFloat(data.c);
-    const priceChangePercent = parseFloat(data.P);
-    const highPrice = parseFloat(data.h);
-    const lowPrice = parseFloat(data.l);
-
-    priceElem.innerText = `$${currentPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    changeElem.innerText = `24h: ${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent}%`;
-    changeElem.style.color = priceChangePercent >= 0 ? "var(--green)" : "var(--red)";
-
-    // Posición dentro del rango del día
-    const range = highPrice - lowPrice;
-    positionInRange = range > 0 ? ((currentPrice - lowPrice) / range) * 100 : 50;
-    techScoreElem.innerText = `${positionInRange.toFixed(0)} / 100`;
-
-    if (positionInRange > 65) {
-      techDescElem.innerText = "Presión de compra (Zona alta de 24h)";
-      techDescElem.style.color = "var(--green)";
-    } else if (positionInRange < 35) {
-      techDescElem.innerText = "Presión de venta (Zona baja de 24h)";
-      techDescElem.style.color = "var(--red)";
-    } else {
-      techDescElem.innerText = "Consolidación en rango medio";
-      techDescElem.style.color = "var(--text-muted)";
+      ws.onclose = () => {
+        wsStatusElem.innerText = "WS Desconectado. Reintentando...";
+        wsStatusElem.className = "font-bold text-binance-yellow";
+        statusPulseElem.className = "w-3 h-3 rounded-full bg-binance-yellow";
+        setTimeout(connectBinanceWebSocket, 3000);
+      };
     }
 
-    // Re-evaluar la señal con la actualización de precio
-    renderNewsTable();
-  };
+    // Update Technical Indicator Box
+    function updateTechnicalUI(position) {
+      techPercentageElem.innerText = `${position.toFixed(0)}%`;
+      techBarElem.style.width = `${Math.min(Math.max(position, 5), 100)}%`;
 
-  ws.onerror = () => {
-    wsStatusElem.innerText = "Error de conexión con Binance";
-    wsStatusElem.style.color = "var(--red)";
-    statusDot.style.backgroundColor = "var(--red)";
-  };
+      if (position >= 70) {
+        rangeStatusElem.innerText = "Cerca de Máximos 📈";
+        rangeStatusElem.className = "text-2xl font-bold font-mono text-binance-green mb-2";
+        techDescElem.innerText = "Presión de compra elevada en zona superior de 24 horas.";
+        techBarElem.className = "bg-binance-green h-full rounded-full transition-all duration-300";
+      } else if (position <= 30) {
+        rangeStatusElem.innerText = "Cerca de Mínimos 📉";
+        rangeStatusElem.className = "text-2xl font-bold font-mono text-binance-red mb-2";
+        techDescElem.innerText = "Presión de venta constante cerca del soporte diario.";
+        techBarElem.className = "bg-binance-red h-full rounded-full transition-all duration-300";
+      } else {
+        rangeStatusElem.innerText = "Consolidación ↔️";
+        rangeStatusElem.className = "text-2xl font-bold font-mono text-binance-yellow mb-2";
+        techDescElem.innerText = "Equilibrio entre la oferta y la demanda en rango medio.";
+        techBarElem.className = "bg-binance-yellow h-full rounded-full transition-all duration-300";
+      }
+    }
 
-  // Inicializar Tabla al Cargar
-  renderNewsTable();
-</script>
+    // Render Macro Table with Input Fields
+    function renderMacroTable() {
+      const tbody = document.getElementById("macro-tbody");
+      tbody.innerHTML = "";
 
+      macroData.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-binance-dark/40 transition-colors";
+
+        // Calculate impact logic
+        const evalResult = evaluateMacroItem(item);
+
+        tr.innerHTML = `
+          <td class="py-3 px-3 text-gray-400 font-mono text-xs">${item.date}</td>
+          <td class="py-3 px-3 font-semibold text-gray-200">${item.name}</td>
+          <td class="py-3 px-3 text-center font-mono text-gray-400">${item.forecast} ${item.unit}</td>
+          <td class="py-3 px-3 text-center">
+            <div class="inline-flex items-center gap-1 bg-binance-dark border border-gray-700 rounded-lg px-2 py-1 focus-within:border-binance-yellow">
+              <input 
+                type="number" 
+                step="0.01" 
+                value="${item.actual}" 
+                onchange="updateActualValue(${index}, this.value)"
+                class="w-16 bg-transparent text-center font-mono font-bold text-white focus:outline-none text-xs"
+              />
+              <span class="text-[10px] text-gray-500 font-mono">${item.unit}</span>
+            </div>
+          </td>
+          <td class="py-3 px-3 text-center">${evalResult.badge}</td>
+          <td class="py-3 px-3 text-right font-bold text-xs">${evalResult.btcDirection}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      calculateFinalSignal();
+    }
+
+    // Individual Item Macro Rules
+    function evaluateMacroItem(item) {
+      const diff = item.actual - item.forecast;
+      const epsilon = 0.001;
+
+      let badge = "";
+      let btcDirection = "";
+      let score = 0; // positive = bullish, negative = bearish
+
+      if (Math.abs(diff) < epsilon) {
+        badge = `<span class="px-2 py-1 rounded text-[11px] font-semibold bg-yellow-950/80 text-binance-yellow border border-yellow-800">Igual a Previsión</span>`;
+        btcDirection = `<span class="text-binance-yellow">NEUTRAL 🟡</span>`;
+        score = 0;
+      } else if (item.type === "inflation_direct") {
+        if (diff > 0) { // Higher inflation = Bearish
+          badge = `<span class="px-2 py-1 rounded text-[11px] font-semibold bg-rose-950/80 text-binance-red border border-rose-800">Mayor (Inflación Alta)</span>`;
+          btcDirection = `<span class="text-binance-red">BEARISH 🔴</span>`;
+          score = -1.5;
+        } else { // Lower inflation = Bullish
+          badge = `<span class="px-2 py-1 rounded text-[11px] font-semibold bg-emerald-950/80 text-binance-green border border-emerald-800">Menor (Inflación Baja)</span>`;
+          btcDirection = `<span class="text-binance-green">BULLISH 🟢</span>`;
+          score = 1.5;
+        }
+      } else if (item.type === "unemployment_direct") {
+        if (diff > 0) { // Higher claims = Bullish for risk
+          badge = `<span class="px-2 py-1 rounded text-[11px] font-semibold bg-emerald-950/80 text-binance-green border border-emerald-800">Mayor Desempleo</span>`;
+          btcDirection = `<span class="text-binance-green">BULLISH 🟢</span>`;
+          score = 1.0;
+        } else {
+          badge = `<span class="px-2 py-1 rounded text-[11px] font-semibold bg-rose-950/80 text-binance-red border border-rose-800">Menor Desempleo</span>`;
+          btcDirection = `<span class="text-binance-red">BEARISH 🔴</span>`;
+          score = -1.0;
+        }
+      } else if (item.type === "growth_direct") {
+        if (diff < 0) { // Lower growth = Fed cuts = Bullish
+          badge = `<span class="px-2 py-1 rounded text-[11px] font-semibold bg-emerald-950/80 text-binance-green border border-emerald-800">Menor Crecimiento</span>`;
+          btcDirection = `<span class="text-binance-green">BULLISH 🟢</span>`;
+          score = 0.5;
+        } else {
+          badge = `<span class="px-2 py-1 rounded text-[11px] font-semibold bg-rose-950/80 text-binance-red border border-rose-800">Mayor Crecimiento</span>`;
+          btcDirection = `<span class="text-binance-red">BEARISH 🔴</span>`;
+          score = -0.5;
+        }
+      }
+
+      return { badge, btcDirection, score };
+    }
+
+    // Update actual data on input change
+    function updateActualValue(index, newValue) {
+      macroData[index].actual = parseFloat(newValue) || 0;
+      renderMacroTable();
+    }
+
+    // Reset table to original snapshot
+    function resetToDefaults() {
+      macroData = JSON.parse(JSON.stringify(defaultMacroEvents));
+      renderMacroTable();
+    }
+
+    // Main Quantitative Decision Engine
+    function calculateFinalSignal(techPos = 50) {
+      // 1. Calculate Fundamental Score
+      let totalMacroScore = 0;
+      macroData.forEach(item => {
+        const evalRes = evaluateMacroItem(item);
+        totalMacroScore += evalRes.score;
+      });
+
+      // 2. Calculate Technical Score
+      let totalTechScore = 0;
+      if (techPos >= 65) totalTechScore += 1.5;
+      else if (techPos <= 35) totalTechScore -= 1.5;
+
+      if (microTrend > 0) totalTechScore += 0.5;
+      else if (microTrend < 0) totalTechScore -= 0.5;
+
+      // 3. Combined Score
+      const combinedScore = totalMacroScore + totalTechScore;
+
+      // Update Scores UI
+      document.getElementById("score-macro").innerText = totalMacroScore.toFixed(1);
+      document.getElementById("score-tech").innerText = totalTechScore.toFixed(1);
+
+      const signalCard = document.getElementById("signal-card");
+      const signalOutput = document.getElementById("signal-output");
+      const signalReason = document.getElementById("signal-reason");
+
+      signalCard.className = "md:col-span-4 bg-binance-card p-5 rounded-2xl border-2 shadow-xl flex flex-col justify-between text-center transition-all duration-500 relative";
+      signalOutput.className = "text-3xl sm:text-4xl font-black tracking-wider";
+
+      if (combinedScore >= 1.5) {
+        signalOutput.innerText = "SUBIRÁ ⬆️";
+        signalOutput.classList.add("text-binance-green");
+        signalCard.classList.add("border-binance-green", "shadow-emerald-950/50");
+        signalReason.innerText = "Dominio de impulsos alcistas macroeconómicos y absorción compradora en Binance.";
+      } else if (combinedScore <= -1.5) {
+        signalOutput.innerText = "BAJARÁ ⬇️";
+        signalOutput.classList.add("text-binance-red");
+        signalCard.classList.add("border-binance-red", "shadow-rose-950/50");
+        signalReason.innerText = "Presión inflacionaria/macro desfavorable sumada a ventas en el libro de órdenes.";
+      } else {
+        signalOutput.innerText = "NEUTRAL ↔️";
+        signalOutput.classList.add("text-binance-yellow");
+        signalCard.classList.add("border-binance-yellow", "shadow-yellow-950/30");
+        signalReason.innerText = "Fuerzas cuantitativas equilibradas. Mercado en rango de consolidación provisional.";
+      }
+    }
+  </script>
 </body>
 </html>
