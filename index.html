@@ -1,1 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indicador BTC/USDT en Tiempo Real - Binance</title>
+  <style>
+    :root {
+      --bg: #12161f;
+      --card-bg: #1e232d;
+      --text: #eaecef;
+      --green: #0ecb81;
+      --red: #f6465d;
+      --yellow: #f0b90b;
+      --gray: #848e9c;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 900px;
+      width: 100%;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .price-title {
+      font-size: 0.9em;
+      color: var(--gray);
+    }
+    .price-value {
+      font-size: 1.8em;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .signal-card {
+      text-align: center;
+      border: 2px solid var(--gray);
+      transition: all 0.3s ease;
+    }
+    .signal-text {
+      font-size: 2em;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .up { color: var(--green); border-color: var(--green); }
+    .down { color: var(--red); border-color: var(--red); }
+    .neutral { color: var(--yellow); border-color: var(--yellow); }
+    
+    .macro-section {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    select, button {
+      background: #2b313a;
+      color: var(--text);
+      border: 1px solid var(--gray);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 1em;
+      margin-top: 5px;
+    }
+    .status {
+      font-size: 0.8em;
+      color: var(--gray);
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
 
+<div class="container">
+  <div class="header">
+    <h1>Dashboard BTC/USDT con Binance WebSocket</h1>
+    <p class="status" id="ws-status">Conectando a Binance...</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="price-title">Precio BTC/USDT (Tiempo Real)</div>
+      <div class="price-value" id="btc-price">$ --.--</div>
+      <div id="price-change">24h: --%</div>
+    </div>
+
+    <div class="card">
+      <div class="price-title">Fuerza Técnica (Momentum 1m)</div>
+      <div class="price-value" id="rsi-val">--</div>
+      <div id="tech-desc">Calculando mechas y tendencia...</div>
+    </div>
+
+    <div class="card signal-card" id="signal-box">
+      <div class="price-title">SEÑAL DE TENDENCIA BTC</div>
+      <div class="signal-text" id="signal-output">ESPERANDO</div>
+    </div>
+  </div>
+
+  <div class="macro-section">
+    <h3>Factor Noticia Macro (Simulador de IPC / Noticias)</h3>
+    <p>Selecciona la sorpresa del dato publicado para recalcular la señal en combinación con la velocidad del libro de órdenes de Binance:</p>
+    <label for="macro-select">Resultado de la Noticia:</label><br>
+    <select id="macro-select" onchange="evaluateSignal()">
+      <option value="neutral">Sin noticia relevante / Neutral</option>
+      <option value="bullish">Dato MENOR a la previsión (Inflación Baja = SUBE)</option>
+      <option value="bearish">Dato MAYOR a la previsión (Inflación Alta = BAJA)</option>
+    </select>
+  </div>
+</div>
+
+<script>
+  let currentPrice = 0;
+  let prevPrice = 0;
+  let priceTrend = 0; // positive = up, negative = down
+
+  // Conexión con el WebSocket oficial de Binance (BTC/USDT @ ticker)
+  const wsUrl = "wss://stream.binance.com:9443/ws/btcusdt@ticker";
+  const ws = new WebSocket(wsUrl);
+
+  const priceElem = document.getElementById("btc-price");
+  const changeElem = document.getElementById("price-change");
+  const statusElem = document.getElementById("ws-status");
+  const techDescElem = document.getElementById("tech-desc");
+  const rsiValElem = document.getElementById("rsi-val");
+
+  ws.onopen = () => {
+    statusElem.innerText = "🟢 Conectado en tiempo real a Binance WS";
+    statusElem.style.color = "#0ecb81";
+  };
+
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    
+    prevPrice = currentPrice;
+    currentPrice = parseFloat(data.c); // Último precio
+    const priceChangePercent = parseFloat(data.P); // Cambio 24h (%)
+    const highPrice = parseFloat(data.h);
+    const lowPrice = parseFloat(data.l);
+
+    // Actualizar pantalla
+    priceElem.innerText = `$${currentPrice.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+    changeElem.innerText = `24h: ${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent}%`;
+    changeElem.style.color = priceChangePercent >= 0 ? "var(--green)" : "var(--red)";
+
+    // Detectar tendencia de micro-tick
+    if (prevPrice > 0) {
+      priceTrend = currentPrice - prevPrice;
+    }
+
+    // Calcular indicador de posición relativa intra-día
+    const range = highPrice - lowPrice;
+    const positionInRange = range > 0 ? ((currentPrice - lowPrice) / range) * 100 : 50;
+    rsiValElem.innerText = `${positionInRange.toFixed(0)} / 100`;
+
+    if (positionInRange > 70) {
+      techDescElem.innerText = "Presión de compra (Cerca de máximos de 24h)";
+    } else if (positionInRange < 30) {
+      techDescElem.innerText = "Presión de venta (Cerca de mínimos de 24h)";
+    } else {
+      techDescElem.innerText = "Consolidación en rango medio";
+    }
+
+    evaluateSignal();
+  };
+
+  ws.onerror = (err) => {
+    statusElem.innerText = "🔴 Error de conexión con Binance";
+    statusElem.style.color = "#f6465d";
+  };
+
+  ws.onclose = () => {
+    statusElem.innerText = "⚪ Conexión cerrada";
+  };
+
+  // Función lógica para emitir la señal combinada
+  function evaluateSignal() {
+    const macroVal = document.getElementById("macro-select").value;
+    const signalBox = document.getElementById("signal-box");
+    const signalOutput = document.getElementById("signal-output");
+
+    let score = 0; // Score positivo = Sube, negativo = Baja
+
+    // Evaluacion Macro
+    if (macroVal === "bullish") score += 2;
+    if (macroVal === "bearish") score -= 2;
+
+    // Evaluacion de flujo de ticks de Binance
+    if (priceTrend > 0) score += 1;
+    if (priceTrend < 0) score -= 1;
+
+    // Actualizar la interfaz gráfica según el score
+    signalBox.classList.remove("up", "down", "neutral");
+
+    if (score >= 2) {
+      signalOutput.innerText = "SUBIRÁ ⬆️";
+      signalBox.classList.add("up");
+    } else if (score <= -2) {
+      signalOutput.innerText = "BAJARÁ ⬇️";
+      signalBox.classList.add("down");
+    } else {
+      signalOutput.innerText = "RANGO / NEUTRAL ↔️";
+      signalBox.classList.add("neutral");
+    }
+  }
+</script>
+
+</body>
+</html>
