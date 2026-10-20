@@ -139,47 +139,43 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // 2. Consulta de eventos usando Proxy CORS
+    // 2. Consulta con fallbacks de proxy y formato corregido
     async function fetchUsdEvents() {
       const today = new Date().toISOString().split('T')[0];
       const tbody = document.getElementById('events-table-body');
 
-      // Endpoint original de Tradays
       const targetUrl = `https://www.tradays.com/en/economic-calendar/widget/events?currency=USD&from=${today}&to=${today}`;
-      
-      // Proxy público para saltarse la restricción CORS
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
       try {
         const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error('Error de red');
+        if (!response.ok) throw new Error('Error al conectar');
 
-        const data = await response.json();
-        const events = JSON.parse(data.contents);
+        const events = await response.json();
 
         if (!Array.isArray(events) || events.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #94a3b8;">No hay eventos macroeconómicos de USD programados para hoy.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #f59e0b; padding: 20px;">No hay eventos macroeconómicos de EE. UU. (USD) programados para hoy.</td></tr>`;
           return;
         }
 
         tbody.innerHTML = events.map(event => {
           const eventDate = new Date(event.date || event.date_utc);
-          const time = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const time = isNaN(eventDate) ? '--:--' : eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           
           let impactText = 'Bajo';
           let impactClass = 'importance-low';
           if (event.importance === 3) { impactText = 'Alta (BTC)'; impactClass = 'importance-high'; }
           else if (event.importance === 2) { impactText = 'Media'; impactClass = 'importance-med'; }
 
-          const actualVal = event.actual ?? '--';
-          const forecastVal = event.forecast ?? '--';
-          const previousVal = event.previous ?? '--';
+          const actualVal = (event.actual !== undefined && event.actual !== null && event.actual !== '') ? event.actual : '--';
+          const forecastVal = (event.forecast !== undefined && event.forecast !== null && event.forecast !== '') ? event.forecast : '--';
+          const previousVal = (event.previous !== undefined && event.previous !== null && event.previous !== '') ? event.previous : '--';
 
           return `
             <tr>
               <td>${time}</td>
               <td><span class="flag">🇺🇸 USD</span></td>
-              <td><strong>${event.name || event.title}</strong></td>
+              <td><strong>${event.name || event.title || 'Evento Económico'}</strong></td>
               <td class="${impactClass}">${impactText}</td>
               <td>${actualVal}</td>
               <td>${forecastVal}</td>
@@ -189,10 +185,11 @@
         }).join('');
 
       } catch (error) {
+        console.error('Error fetching events:', error);
         tbody.innerHTML = `
           <tr>
-            <td colspan="7" style="text-align:center; color: #ef4444;">
-              Error al actualizar los datos. Reintentando en breve...
+            <td colspan="7" style="text-align:center; color: #ef4444; padding: 20px;">
+              No se pudieron cargar los datos de la API. Verifica tu conexión o reintenta en un momento.
             </td>
           </tr>
         `;
@@ -201,7 +198,7 @@
 
     // Consulta inicial y actualización periódica
     fetchUsdEvents();
-    setInterval(fetchUsdEvents, 10000); // Se actualiza cada 10 segundos
+    setInterval(fetchUsdEvents, 10000); // Actualiza cada 10 segundos
   </script>
 </body>
 </html>
