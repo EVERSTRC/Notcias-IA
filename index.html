@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>API Widget Calendario Económico</title>
+  <title>Calendario Económico - Día Actual</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,38 +19,31 @@
 <body>
 
   <div class="calendar-container">
-    <h2>Calendario Económico</h2>
+    <h2>Calendario Económico de Hoy</h2>
     
-    <!-- Elemento personalizado con parámetros opcionales -->
-    <economic-calendar mode="2" height="600px"></economic-calendar>
+    <!-- Configurado con mode="1" para mostrar solo el día de hoy -->
+    <economic-calendar mode="1" height="500px"></economic-calendar>
   </div>
 
   <script>
-    /**
-     * API Web Component para montar el Widget del Calendario Económico
-     */
     class EconomicCalendar extends HTMLElement {
       connectedCallback() {
-        // Evita duplicar el script si ya fue cargado
         if (this.querySelector('script[data-type="calendar-widget"]')) return;
 
-        // Leer atributos de configuración
-        const mode = this.getAttribute('mode') || '2'; // 1: Día, 2: Semana, 3: Mes
-        const height = this.getAttribute('height') || '600px';
+        // "1" = Día actual (hoy)
+        const mode = this.getAttribute('mode') || '1'; 
+        const height = this.getAttribute('height') || '500px';
 
-        // Aplicar estilos al contenedor principal
         this.style.display = 'block';
         this.style.width = '100%';
         this.style.height = height;
         this.style.position = 'relative';
 
-        // Contenedor interno donde el script inserta el iframe del calendario
         const widgetDiv = document.createElement('div');
         widgetDiv.id = 'economicCalendarWidget';
         widgetDiv.style.width = '100%';
         widgetDiv.style.height = '100%';
 
-        // Pie de página de derechos/atribución
         const copyrightDiv = document.createElement('div');
         copyrightDiv.className = 'ecw-copyright';
         copyrightDiv.style.fontSize = '12px';
@@ -63,7 +56,6 @@
           </a>
         `;
 
-        // Inyección del script oficial de Tradays
         const script = document.createElement('script');
         script.src = 'https://www.tradays.com/c/js/widgets/calendar/widget.js?v=15';
         script.type = 'text/javascript';
@@ -72,18 +64,16 @@
         script.textContent = JSON.stringify({
           width: '100%',
           height: '100%',
-          mode: mode,
+          mode: mode, // 1 = Día
           fw: 'html'
         });
 
-        // Ensamblar DOM
         this.appendChild(widgetDiv);
         this.appendChild(copyrightDiv);
         this.appendChild(script);
       }
     }
 
-    // Registrar la etiqueta <economic-calendar> en el navegador
     customElements.define('economic-calendar', EconomicCalendar);
   </script>
 </body>
