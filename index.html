@@ -3,300 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Macro EE.UU. - Auto-Update Tradays & AI BTC</title>
+  <title>API Widget Calendario Económico</title>
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #e2e8f0; margin: 0; padding: 20px; }
-    .container { max-width: 1300px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
-    
-    .card { background: #151c2c; border: 1px solid #2a3447; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
-    .dashboard-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid #2a3447; padding-bottom: 15px; }
-    h2 { margin: 0; color: #f8fafc; font-size: 20px; display: flex; align-items: center; gap: 10px; }
-
-    /* Indicador de actualización en tiempo real */
-    .live-status { display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-    .pulse-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; animation: pulse 1s infinite; }
-    @keyframes pulse {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
     }
-
-    /* Estilos de Bloques Horarios */
-    .block-card { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px; margin-top: 16px; }
-    .block-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
-    
-    .date-badge { background: #334155; color: #38bdf8; font-weight: bold; padding: 4px 10px; border-radius: 6px; font-size: 13px; border: 1px solid #0284c7; }
-    .time-badge { background: #0284c7; color: #fff; font-weight: bold; padding: 4px 12px; border-radius: 6px; font-size: 13px; }
-    
-    .block-summary { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 12px; }
-    .summary-title { font-size: 12px; text-transform: uppercase; color: #94a3b8; font-weight: bold; letter-spacing: 0.5px; }
-    .summary-impact { font-size: 14px; font-weight: bold; margin-top: 4px; color: #f8fafc; }
-
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 8px 12px; border-bottom: 1px solid #1e293b; font-size: 13px; }
-    th { color: #94a3b8; font-size: 11px; text-transform: uppercase; }
-    
-    .badge { padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
-    .imp-high { background: rgba(220, 38, 38, 0.2); color: #f87171; border: 1px solid #ef4444; }
-    .imp-medium { background: rgba(217, 119, 6, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
-    .imp-low { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
-
-    .ai-signal { padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; display: inline-flex; }
-    .bullish { background: #15803d; color: #dcfce7; }
-    .bearish { background: #b91c1c; color: #fee2e2; }
-    .neutral { background: #475569; color: #f1f5f9; }
-
-    .calendar-widget-container { width: 100%; height: 600px; position: relative; }
-    #economicCalendarWidget { width: 100%; height: 100%; }
-    .ecw-copyright { font-size: 11px; color: #64748b; margin-top: 6px; text-align: right; }
-    .ecw-copyright a { color: #38bdf8; text-decoration: none; }
+    .calendar-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body>
 
-<div class="container">
-
-  <!-- DASHBOARD PRINCIPAL CON AUTO-UPDATE -->
-  <div class="card">
-    <div class="dashboard-header">
-      <h2>📅 Bloques Macro EE.UU. & Análisis IA para Bitcoin</h2>
-      <div class="live-status">
-        <div class="pulse-dot"></div>
-        <span id="syncLabel">SINCRO TRADAYS EN VIVO (CADA 5s)</span>
-      </div>
-    </div>
-
-    <div id="blocksContainer">
-      <!-- Los bloques se procesan dinámicamente -->
-    </div>
-  </div>
-
-  <!-- WIDGET INTEGRADO OFICIAL -->
-  <div class="card">
-    <h2>📅 Calendario Económico Global en Vivo (MQL5 / Tradays)</h2>
-    <div class="calendar-widget-container">
-      <div id="economicCalendarWidget"></div>
-      <div class="ecw-copyright">
-        <a href="https://www.metatrader.com/?utm_source=calendar.widget&utm_medium=link&utm_term=economic.calendar&utm_content=visit.mql5.calendar&utm_campaign=202.calendar.widget" rel="noopener nofollow" target="_blank">MetaTrader World Markets</a>
-      </div>
-      <script async type="text/javascript" data-type="calendar-widget" src="https://www.tradays.com/c/js/widgets/calendar/widget.js?v=15">
-        {"width":"100%","height":"100%","mode":"2","fw":"html","lang":"es"}
-      </script>
-    </div>
-  </div>
-
-</div>
-
-<script>
-  // Estructura de eventos mapeada con identificadores para Tradays
-  let newsDatabase = [
-    // 📅 20/10/2026 - 06:30 AM
-    { id: "h1", date: "2026-10-20", time: "06:30", event: "Inicios de construcción de Nueva Vivienda", importance: "MEDIUM", affectsBTC: true, forecast: 1.468, actual: 1.221, inverse: true },
-    { id: "h2", date: "2026-10-20", time: "06:30", event: "Permisos de Construcción", importance: "MEDIUM", affectsBTC: true, forecast: 1.441, actual: 1.400, inverse: true },
-    { id: "h3", date: "2026-10-20", time: "06:30", event: "Inicios de Construcción m/m", importance: "LOW", affectsBTC: false, forecast: -14.0, actual: -5.2, inverse: false },
-    { id: "h4", date: "2026-10-20", time: "06:30", event: "Permisos de Construcción m/m", importance: "LOW", affectsBTC: false, forecast: 1.2, actual: -0.2, inverse: false },
-
-    // 📅 20/10/2026 - 08:00 AM
-    { id: "p1", date: "2026-10-20", time: "08:00", event: "Ventas de Viviendas Pendientes m/m", importance: "MEDIUM", affectsBTC: true, forecast: -0.9, actual: null, inverse: true },
-    { id: "p2", date: "2026-10-20", time: "08:00", event: "Ventas de Viviendas Pendientes a/a", importance: "LOW", affectsBTC: false, forecast: 0.7, actual: null, inverse: false },
-    { id: "p3", date: "2026-10-20", time: "08:00", event: "Índice de Ventas de Viviendas Pendientes", importance: "MEDIUM", affectsBTC: true, forecast: 70.5, actual: null, inverse: true }
-  ];
-
-  function evaluateIndividual(item) {
-    if (item.actual === null) return { text: "⏳ Pendiente", signal: "neutral" };
+  <div class="calendar-container">
+    <h2>Calendario Económico</h2>
     
-    let isPositive = item.inverse ? (item.actual < item.forecast) : (item.actual > item.forecast);
-    if (item.actual === item.forecast) return { text: "▬ En previsión", signal: "neutral" };
-    return isPositive ? { text: "▲ Alcista", signal: "bullish" } : { text: "▼ Bajista", signal: "bearish" };
-  }
+    <!-- Elemento personalizado con parámetros opcionales -->
+    <economic-calendar mode="2" height="600px"></economic-calendar>
+  </div>
 
-  function calculateBlockImpact(events) {
-    let bullishCount = 0;
-    let bearishCount = 0;
-    let pendingCount = 0;
+  <script>
+    /**
+     * API Web Component para montar el Widget del Calendario Económico
+     */
+    class EconomicCalendar extends HTMLElement {
+      connectedCallback() {
+        // Evita duplicar el script si ya fue cargado
+        if (this.querySelector('script[data-type="calendar-widget"]')) return;
 
-    events.forEach(e => {
-      if (e.actual === null) {
-        pendingCount++;
-      } else if (e.affectsBTC) {
-        const res = evaluateIndividual(e);
-        if (res.signal === "bullish") bullishCount++;
-        if (res.signal === "bearish") bearishCount++;
-      }
-    });
+        // Leer atributos de configuración
+        const mode = this.getAttribute('mode') || '2'; // 1: Día, 2: Semana, 3: Mes
+        const height = this.getAttribute('height') || '600px';
 
-    if (pendingCount === events.length) {
-      return {
-        summary: "⏳ Bloque Pendiente de Publicación. Esperando la salida oficial de los datos para calcular el sesgo en Bitcoin.",
-        badge: "⏳ PENDIENTE DE DATOS",
-        css: "neutral"
-      };
-    }
+        // Aplicar estilos al contenedor principal
+        this.style.display = 'block';
+        this.style.width = '100%';
+        this.style.height = height;
+        this.style.position = 'relative';
 
-    if (pendingCount > 0) {
-      return {
-        summary: `🔄 Publicación Parcial (${events.length - pendingCount}/${events.length} salidos). Aguardando el resto de datos del bloque para dictaminar el impacto final.`,
-        badge: "🔄 EN PROCESO",
-        css: "neutral"
-      };
-    }
+        // Contenedor interno donde el script inserta el iframe del calendario
+        const widgetDiv = document.createElement('div');
+        widgetDiv.id = 'economicCalendarWidget';
+        widgetDiv.style.width = '100%';
+        widgetDiv.style.height = '100%';
 
-    if (bullishCount > bearishCount) {
-      return {
-        summary: `▲ IMPACTO NETO ALCISTA PARA BITCOIN: Los datos publicados en este bloque reducen la presión inflacionaria/macro. Sesgo favorable para BTC/USD.`,
-        badge: "▲ ALCISTA EN BTC",
-        css: "bullish"
-      };
-    } else if (bearishCount > bullishCount) {
-      return {
-        summary: `▼ IMPACTO NETO BAJISTA PARA BITCOIN: Los datos publicados muestran solidez económica o presión en tasas. Sesgo bajista sobre BTC/USD.`,
-        badge: "▼ BAJISTA EN BTC",
-        css: "bearish"
-      };
-    } else {
-      return {
-        summary: `▬ IMPACTO MIXTO / NEUTRAL: Los datos del bloque se compensan mutuamente o coincidieron con el pronóstico.`,
-        badge: "▬ NEUTRAL / MIXTO",
-        css: "neutral"
-      };
-    }
-  }
-
-  function formatDate(dateStr) {
-    const d = new Date(dateStr + "T00:00:00");
-    return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  }
-
-  function renderTimeBlocks() {
-    const container = document.getElementById("blocksContainer");
-    container.innerHTML = "";
-
-    const grouped = {};
-    newsDatabase.forEach(item => {
-      const groupKey = `${item.date}_${item.time}`;
-      if (!grouped[groupKey]) grouped[groupKey] = [];
-      grouped[groupKey].push(item);
-    });
-
-    Object.keys(grouped).forEach(key => {
-      const events = grouped[key];
-      const blockDate = events[0].date;
-      const blockTime = events[0].time;
-      const blockImpact = calculateBlockImpact(events);
-
-      const blockDiv = document.createElement("div");
-      blockDiv.className = "block-card";
-
-      let rowsHtml = events.map(e => {
-        const ind = evaluateIndividual(e);
-        const btcTag = e.affectsBTC ? `<span style="color:#f59e0b; font-weight:bold;">⚡ BTC</span>` : `<span style="color:#64748b;">Macro</span>`;
-        const impBadge = e.importance === 'HIGH' ? '<span class="badge imp-high">🔴 Alta</span>' : 
-                         (e.importance === 'MEDIUM' ? '<span class="badge imp-medium">🟡 Media</span>' : '<span class="badge imp-low">🟢 Baja</span>');
-
-        return `
-          <tr>
-            <td><strong>${e.event}</strong></td>
-            <td>${btcTag}</td>
-            <td>${impBadge}</td>
-            <td>${e.forecast ?? 'N/A'}</td>
-            <td><strong>${e.actual !== null ? e.actual : 'Esperando...'}</strong></td>
-            <td><span class="ai-signal ${ind.signal}">${ind.text}</span></td>
-          </tr>
+        // Pie de página de derechos/atribución
+        const copyrightDiv = document.createElement('div');
+        copyrightDiv.className = 'ecw-copyright';
+        copyrightDiv.style.fontSize = '12px';
+        copyrightDiv.style.marginTop = '4px';
+        copyrightDiv.innerHTML = `
+          <a href="https://www.metatrader.com/?utm_source=calendar.widget&utm_medium=link&utm_term=economic.calendar&utm_content=visit.mql5.calendar&utm_campaign=202.calendar.widget" 
+             rel="noopener nofollow" 
+             target="_blank">
+            MetaTrader World Markets
+          </a>
         `;
-      }).join('');
 
-      blockDiv.innerHTML = `
-        <div class="block-header">
-          <div>
-            <span class="date-badge">📅 ${formatDate(blockDate)}</span>
-            <span class="time-badge" style="margin-left: 6px;">⏰ Bloque de las ${blockTime}</span>
-            <span style="font-size:13px; color:#94a3b8; margin-left:10px;">(${events.length} noticias en este bloque)</span>
-          </div>
-          <span class="ai-signal ${blockImpact.css}">${blockImpact.badge}</span>
-        </div>
+        // Inyección del script oficial de Tradays
+        const script = document.createElement('script');
+        script.src = 'https://www.tradays.com/c/js/widgets/calendar/widget.js?v=15';
+        script.type = 'text/javascript';
+        script.async = true;
+        script.setAttribute('data-type', 'calendar-widget');
+        script.textContent = JSON.stringify({
+          width: '100%',
+          height: '100%',
+          mode: mode,
+          fw: 'html'
+        });
 
-        <table>
-          <thead>
-            <tr>
-              <th>Noticia del Bloque</th>
-              <th>Sensibilidad</th>
-              <th>Importancia</th>
-              <th>Previsión</th>
-              <th>Dato Actual</th>
-              <th>Sesgo Individual</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rowsHtml}
-          </tbody>
-        </table>
-
-        <div class="block-summary" style="border-left-color: ${blockImpact.css === 'bullish' ? '#16a34a' : (blockImpact.css === 'bearish' ? '#dc2626' : '#64748b')};">
-          <div class="summary-title">Conclusión de Inteligencia Macro (${formatDate(blockDate)} — ${blockTime}):</div>
-          <div class="summary-impact">${blockImpact.summary}</div>
-        </div>
-      `;
-
-      container.appendChild(blockDiv);
-    });
-  }
-
-  // Motor de sincronización automática directa con la API pública de Tradays
-  async function syncWithTradays() {
-    try {
-      // Uso de proxy CORS para consultar Tradays directamente sin bloqueos del navegador
-      const targetUrl = 'https://www.tradays.com/en/economic-calendar/content?period=0'; 
-      const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
-      
-      const response = await fetch(proxyUrl);
-      const htmlText = await response.text();
-
-      // Analizar el contenido recibido
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlText, 'text/html');
-      const rows = doc.querySelectorAll('tr.ec-table__item');
-
-      let updatedAny = false;
-
-      rows.forEach(row => {
-        const titleEl = row.querySelector('.ec-table__event');
-        const actualEl = row.querySelector('.ec-table__actual');
-
-        if (titleEl && actualEl) {
-          const eventName = titleEl.textContent.trim();
-          const actualText = actualEl.textContent.trim();
-
-          if (actualText && actualText !== "" && actualText !== "N/D") {
-            const numericValue = parseFloat(actualText.replace(/[^0-9.-]/g, ''));
-            
-            if (!isNaN(numericValue)) {
-              newsDatabase.forEach(item => {
-                if (item.actual === null && eventName.toLowerCase().includes(item.event.toLowerCase().substring(0, 10))) {
-                  item.actual = numericValue;
-                  updatedAny = true;
-                }
-              });
-            }
-          }
-        }
-      });
-
-      if (updatedAny) {
-        renderTimeBlocks();
+        // Ensamblar DOM
+        this.appendChild(widgetDiv);
+        this.appendChild(copyrightDiv);
+        this.appendChild(script);
       }
-    } catch (e) {
-      console.log("Sincronizando con Tradays en segundo plano...");
     }
-  }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    renderTimeBlocks();
-    syncWithTradays();
-    // Ejecutar ciclo de sincronización continua cada 5 segundos
-    setInterval(syncWithTradays, 5000);
-  });
-</script>
-
+    // Registrar la etiqueta <economic-calendar> en el navegador
+    customElements.define('economic-calendar', EconomicCalendar);
+  </script>
 </body>
 </html>
