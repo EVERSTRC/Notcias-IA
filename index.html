@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario Económico - Día Actual</title>
+  <title>Calendario Económico - Noticias USD (Hoy)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,9 +19,9 @@
 <body>
 
   <div class="calendar-container">
-    <h2>Calendario Económico de Hoy</h2>
+    <h2>Calendario Económico EE. UU. (Hoy)</h2>
     
-    <!-- Configurado con mode="1" para mostrar solo el día de hoy -->
+    <!-- Componente filtrado solo para noticias de USD del día actual -->
     <economic-calendar mode="1" height="500px"></economic-calendar>
   </div>
 
@@ -30,7 +30,7 @@
       connectedCallback() {
         if (this.querySelector('script[data-type="calendar-widget"]')) return;
 
-        // "1" = Día actual (hoy)
+        // "1" = Día actual
         const mode = this.getAttribute('mode') || '1'; 
         const height = this.getAttribute('height') || '500px';
 
@@ -61,10 +61,13 @@
         script.type = 'text/javascript';
         script.async = true;
         script.setAttribute('data-type', 'calendar-widget');
+        
+        // Configuración con filtro exclusivo de divisa USD
         script.textContent = JSON.stringify({
           width: '100%',
           height: '100%',
-          mode: mode, // 1 = Día
+          mode: mode,            // 1 = Día actual
+          currencies: ["USD"],   // Filtra únicamente noticias de EE. UU.
           fw: 'html'
         });
 
