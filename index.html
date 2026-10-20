@@ -28,7 +28,6 @@
     th { background-color: #0f172a; color: #94a3b8; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
     tr:hover { background-color: #1e293b; }
     
-    /* Badges */
     .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
     .imp-high { background: rgba(220, 38, 38, 0.2); color: #f87171; border: 1px solid #ef4444; }
     .imp-medium { background: rgba(217, 119, 6, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
@@ -37,8 +36,8 @@
     .btc-tag { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #d97706; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 6px; }
 
     .ai-signal { padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; }
-    .bullish { background: #15803d; color: #dcfce7; } /* BTC Sube */
-    .bearish { background: #b91c1c; color: #fee2e2; } /* BTC Baja */
+    .bullish { background: #15803d; color: #dcfce7; }
+    .bearish { background: #b91c1c; color: #fee2e2; }
     .neutral { background: #475569; color: #f1f5f9; }
 
     .update-box { display: flex; gap: 10px; align-items: center; margin-top: 15px; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed #334155; flex-wrap: wrap; }
@@ -53,7 +52,6 @@
 
 <div class="container">
 
-  <!-- DASHBOARD PRINCIPAL -->
   <div class="card">
     <div class="dashboard-header">
       <h2>🇺🇸 Noticias EE.UU. (Desde las 06:30 AM) & Impacto BTC</h2>
@@ -77,30 +75,11 @@
 
     <!-- PESTAÑAS -->
     <div class="tabs">
-      <button class="tab-btn active" id="tabUpdatedBtn" onclick="switchTab('UPDATED')">Noticias Publicadas / Con Datos (<span id="updatedCount">0</span>)</button>
       <button class="tab-btn" id="tabPendingBtn" onclick="switchTab('PENDING')">Pendientes Próximas (<span id="pendingCount">0</span>)</button>
+      <button class="tab-btn active" id="tabUpdatedBtn" onclick="switchTab('UPDATED')">Noticias Publicadas / Con Datos (<span id="updatedCount">0</span>)</button>
     </div>
 
-    <!-- TABLA ACTUALIZADAS (CON LAS DATOS DE LAS 06:30 AM REALES) -->
-    <div id="updatedView" class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th>Evento EE.UU.</th>
-            <th>Importancia</th>
-            <th>Previsión</th>
-            <th>Dato Actual</th>
-            <th>Análisis Algorítmico AI</th>
-            <th>Predicción BTC</th>
-          </tr>
-        </thead>
-        <tbody id="updatedTableBody"></tbody>
-      </table>
-    </div>
-
-    <!-- TABLA PENDIENTES -->
+    <!-- TABLA PENDIENTES (INCLUYE LAS 3 DE LAS 08:00 AM) -->
     <div id="pendingView" class="table-container" style="display: none;">
       <table>
         <thead>
@@ -119,16 +98,35 @@
       </table>
     </div>
 
-    <!-- SIMULADOR -->
+    <!-- TABLA ACTUALIZADAS -->
+    <div id="updatedView" class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Evento EE.UU.</th>
+            <th>Importancia</th>
+            <th>Previsión</th>
+            <th>Dato Actual</th>
+            <th>Análisis Algorítmico AI</th>
+            <th>Predicción BTC</th>
+          </tr>
+        </thead>
+        <tbody id="updatedTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- SIMULADOR INTERACTIVO -->
     <div class="update-box">
-      <span style="font-size: 13px; color: #94a3b8; font-weight: bold;">🧪 Simular o Registrar Dato Reciente:</span>
+      <span style="font-size: 13px; color: #94a3b8; font-weight: bold;">🧪 Simular o Registrar Dato Reciente (ej. 08:00 AM):</span>
       <select id="simEventSelect"></select>
       <input type="number" id="simActualValue" placeholder="Valor actual publicado" step="0.01" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:6px 10px; border-radius:4px; width:160px;">
       <button onclick="simulateNewsUpdate()" style="background:#0284c7; color:white; border:none;">Procesar con IA</button>
     </div>
   </div>
 
-  <!-- WIDGET INTEGRADO OFICIAL TRADAYS -->
+  <!-- WIDGET INTEGRADO TRADAYS -->
   <div class="card">
     <h2>📅 Calendario Económico Global en Vivo (MQL5 / Tradays)</h2>
     <div class="calendar-widget-container">
@@ -145,16 +143,17 @@
 </div>
 
 <script>
-  // Noticias reales de las 06:30 AM ingresadas y evaluadas
   let newsDatabase = [
+    // 06:30 AM (Ya salieron en la mañana)
     { id: 201, date: "2026-10-20", time: "06:30", origin: "USD", event: "Inicios de construcción de Nueva Vivienda", importance: "MEDIUM", affectsBTC: true, previous: "1.288M", forecast: 1.468, actual: 1.221, inverse: true },
     { id: 202, date: "2026-10-20", time: "06:30", origin: "USD", event: "Permisos de Construcción", importance: "MEDIUM", affectsBTC: true, previous: "1.403M", forecast: 1.441, actual: 1.400, inverse: true },
     { id: 203, date: "2026-10-20", time: "06:30", origin: "USD", event: "Inicios de Construcción de nueva vivienda m/m", importance: "LOW", affectsBTC: false, previous: "-5.9%", forecast: -14.0, actual: -5.2, inverse: false },
     { id: 204, date: "2026-10-20", time: "06:30", origin: "USD", event: "Permisos de Construcción m/m", importance: "LOW", affectsBTC: false, previous: "-2.1%", forecast: 1.2, actual: -0.2, inverse: false },
     
-    // Noticias próximas a las 08:00 AM
+    // 08:00 AM (Las 3 noticias completas registradas en Tradays)
     { id: 205, date: "2026-10-20", time: "08:00", origin: "USD", event: "Ventas de Viviendas Pendientes m/m", importance: "MEDIUM", affectsBTC: true, previous: "0.3%", forecast: -0.9, actual: null, inverse: true },
-    { id: 206, date: "2026-10-20", time: "08:00", origin: "USD", event: "Ventas de Viviendas Pendientes a/a", importance: "LOW", affectsBTC: false, previous: "-4.7%", forecast: 0.7, actual: null, inverse: false }
+    { id: 206, date: "2026-10-20", time: "08:00", origin: "USD", event: "Ventas de Viviendas Pendientes a/a", importance: "LOW", affectsBTC: false, previous: "-4.7%", forecast: 0.7, actual: null, inverse: false },
+    { id: 207, date: "2026-10-20", time: "08:00", origin: "USD", event: "Índice de Ventas de Viviendas Pendientes", importance: "MEDIUM", affectsBTC: true, previous: "71.2", forecast: 70.5, actual: null, inverse: true }
   ];
 
   let currentTab = "UPDATED";
@@ -165,7 +164,7 @@
 
     if (!affectsBTC) {
       return {
-        text: "Dato menor de construcción en EE.UU. Impacto marginal en el volumen de BTC.",
+        text: "Dato publicado de EE.UU. Sin impacto relevante esperado en Bitcoin.",
         class: "neutral",
         prediction: "▬ NEUTRAL / SIN IMPACTO"
       };
@@ -173,7 +172,6 @@
 
     let isPositive = false;
     if (inverse) {
-      // Dato peor al esperado (menor que el forecast) frena la economía y la inflación -> Impulsa recortes Fed -> Alcista BTC
       isPositive = actual < forecast;
     } else {
       isPositive = actual > forecast;
@@ -181,7 +179,7 @@
 
     if (actual === forecast) {
       return {
-        text: "Dato en línea con lo previsto. Sin sorpresa para el mercado cripto.",
+        text: "Dato en línea con lo previsto.",
         class: "neutral",
         prediction: "▬ NEUTRAL"
       };
@@ -189,13 +187,13 @@
 
     if (isPositive) {
       return {
-        text: `Dato publicado (${actual} vs ${forecast} prev). Caída mayor a la prevista en construcción sugiere menor presión macro: Sesgo positivo para BTC.`,
+        text: `Dato publicado (${actual} vs ${forecast} prev). Menor presión macro: Sesgo positivo para BTC.`,
         class: "bullish",
         prediction: "▲ ALCISTA (BTC Sube)"
       };
     } else {
       return {
-        text: `Dato publicado (${actual} vs ${forecast} prev). Mayor actividad económica genera presión en tasas: Sesgo negativo en BTC.`,
+        text: `Dato publicado (${actual} vs ${forecast} prev). Presión macro/tasas: Sesgo bajista en BTC.`,
         class: "bearish",
         prediction: "▼ BAJISTA (BTC Baja)"
       };
@@ -243,7 +241,7 @@
           <td><strong>${item.event}</strong> ${btcTagHtml}</td>
           <td>${getImportanceBadge(item.importance)}</td>
           <td>${item.previous}</td>
-          <td>${item.forecast}</td>
+          <td>${item.forecast ?? 'N/A'}</td>
           <td><span class="badge neutral">Pendiente</span></td>
         `;
         pendingTbody.appendChild(row);
@@ -262,7 +260,7 @@
           <td><strong>${item.time}</strong></td>
           <td><strong>${item.event}</strong> ${btcTagHtml}</td>
           <td>${getImportanceBadge(item.importance)}</td>
-          <td>${item.forecast}</td>
+          <td>${item.forecast ?? 'N/A'}</td>
           <td><strong>${item.actual}</strong></td>
           <td style="color:#cbd5e1; font-size: 12px;">${aiResult.text}</td>
           <td><span class="ai-signal ${aiResult.class}">${aiResult.prediction}</span></td>
