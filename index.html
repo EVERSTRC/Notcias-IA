@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Macro EE.UU. - Bloques con Fecha & AI BTC</title>
+  <title>Dashboard Macro EE.UU. - Auto-Refresh 1s & Impacto BTC</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #e2e8f0; margin: 0; padding: 20px; }
@@ -13,7 +13,16 @@
     .dashboard-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid #2a3447; padding-bottom: 15px; }
     h2 { margin: 0; color: #f8fafc; font-size: 20px; display: flex; align-items: center; gap: 10px; }
 
-    /* Estilos de Bloques Horarios con Fecha */
+    /* Indicador de actualización en vivo */
+    .live-status { display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+    .pulse-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; animation: pulse 1s infinite; }
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* Estilos de Bloques Horarios */
     .block-card { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px; margin-top: 16px; }
     .block-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
     
@@ -50,22 +59,26 @@
 
 <div class="container">
 
-  <!-- DASHBOARD DE BLOQUES CON FECHAS -->
+  <!-- DASHBOARD DE BLOQUES CON ACTUALIZACIÓN EN VIVO -->
   <div class="card">
     <div class="dashboard-header">
-      <h2>📅 Bloques Horarios por Fecha & Impacto en Bitcoin (BTC)</h2>
+      <h2>📅 Bloques Macro EE.UU. & Impacto BTC</h2>
+      <div class="live-status">
+        <div class="pulse-dot"></div>
+        <span>AUTO-REFRESH 1s ACTIVO</span>
+      </div>
     </div>
 
-    <!-- SIMULADOR INTERACTIVO -->
+    <!-- SIMULADOR INTERACTIVO (Respaldo Manual) -->
     <div class="update-box">
-      <span style="font-size: 13px; color: #94a3b8; font-weight: bold;">🧪 Simular o Registrar Dato Publicado:</span>
+      <span style="font-size: 13px; color: #94a3b8; font-weight: bold;">🧪 Registrar o Forzar Dato Reciente:</span>
       <select id="simEventSelect"></select>
       <input type="number" id="simActualValue" placeholder="Nuevo valor publicado" step="0.01" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:6px 10px; border-radius:4px; width:160px;">
       <button onclick="simulateNewsUpdate()" style="background:#0284c7; color:white; border:none; cursor:pointer;">Procesar con IA</button>
     </div>
 
     <div id="blocksContainer">
-      <!-- Los bloques clasificados por Fecha y Hora se renderizan aquí -->
+      <!-- Se genera y actualiza automáticamente cada segundo -->
     </div>
   </div>
 
@@ -86,20 +99,23 @@
 </div>
 
 <script>
-  // Eventos estructurados con fecha explícita (YYYY-MM-DD)
+  // Reemplaza 'DEMO' por tu API Key real de Financial Modeling Prep para consumo live continuo
+  const API_KEY = "DEMO";
+
+  // Base de datos local
   let newsDatabase = [
-    // 📅 HOY: 20/10/2026 - 06:30 AM (Ya salieron)
+    // 06:30 AM (Ya salieron)
     { id: 1, date: "2026-10-20", time: "06:30", event: "Inicios de construcción de Nueva Vivienda", importance: "MEDIUM", affectsBTC: true, forecast: 1.468, actual: 1.221, inverse: true },
     { id: 2, date: "2026-10-20", time: "06:30", event: "Permisos de Construcción", importance: "MEDIUM", affectsBTC: true, forecast: 1.441, actual: 1.400, inverse: true },
     { id: 3, date: "2026-10-20", time: "06:30", event: "Inicios de Construcción m/m", importance: "LOW", affectsBTC: false, forecast: -14.0, actual: -5.2, inverse: false },
     { id: 4, date: "2026-10-20", time: "06:30", event: "Permisos de Construcción m/m", importance: "LOW", affectsBTC: false, forecast: 1.2, actual: -0.2, inverse: false },
 
-    // 📅 HOY: 20/10/2026 - 08:00 AM (PENDIENTES)
+    // 08:00 AM (Bloque en actualización)
     { id: 5, date: "2026-10-20", time: "08:00", event: "Ventas de Viviendas Pendientes m/m", importance: "MEDIUM", affectsBTC: true, forecast: -0.9, actual: null, inverse: true },
     { id: 6, date: "2026-10-20", time: "08:00", event: "Ventas de Viviendas Pendientes a/a", importance: "LOW", affectsBTC: false, forecast: 0.7, actual: null, inverse: false },
     { id: 7, date: "2026-10-20", time: "08:00", event: "Índice de Ventas de Viviendas Pendientes", importance: "MEDIUM", affectsBTC: true, forecast: 70.5, actual: null, inverse: true },
 
-    // 📅 MAÑANA: 21/10/2026 - 08:30 AM (PENDIENTES)
+    // Bloque futuro mañana
     { id: 8, date: "2026-10-21", time: "08:30", event: "Índice de Precios al Consumidor (IPC m/m)", importance: "HIGH", affectsBTC: true, forecast: 0.3, actual: null, inverse: true },
     { id: 9, date: "2026-10-21", time: "08:30", event: "IPC General a/a", importance: "HIGH", affectsBTC: true, forecast: 2.9, actual: null, inverse: true }
   ];
@@ -172,6 +188,10 @@
   function renderTimeBlocks() {
     const container = document.getElementById("blocksContainer");
     const simSelect = document.getElementById("simEventSelect");
+    
+    // Preservar la opción seleccionada si la hay
+    const selectedSimValue = simSelect.value;
+
     container.innerHTML = "";
     simSelect.innerHTML = "";
 
@@ -180,10 +200,11 @@
       const opt = document.createElement("option");
       opt.value = item.id;
       opt.textContent = `[${formatDate(item.date)} - ${item.time}] ${item.event}`;
+      if (item.id == selectedSimValue) opt.selected = true;
       simSelect.appendChild(opt);
     });
 
-    // Agrupar por FECHA + HORA (Llave única: "2026-10-20_08:00")
+    // Agrupar por FECHA + HORA
     const grouped = {};
     newsDatabase.forEach(item => {
       const groupKey = `${item.date}_${item.time}`;
@@ -254,6 +275,31 @@
     });
   }
 
+  // Función de Polling que ejecuta la actualización automática cada 1s
+  async function fetchLiveNews() {
+    if (API_KEY !== "DEMO") {
+      try {
+        const response = await fetch(`https://financialmodelingprep.com/api/v3/economic_calendar?apikey=${API_KEY}`);
+        const data = await response.json();
+        
+        // Mapear datos recibidos
+        if (Array.isArray(data) && data.length > 0) {
+          data.forEach(apiEvent => {
+            const match = newsDatabase.find(n => n.event.toLowerCase().includes(apiEvent.event.toLowerCase()));
+            if (match && apiEvent.actual !== null) {
+              match.actual = parseFloat(apiEvent.actual);
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Error al consultar la API:", e);
+      }
+    }
+    
+    // Renderizado continuo
+    renderTimeBlocks();
+  }
+
   function simulateNewsUpdate() {
     const selectedId = parseInt(document.getElementById("simEventSelect").value);
     const newValue = parseFloat(document.getElementById("simActualValue").value);
@@ -271,7 +317,11 @@
     }
   }
 
-  document.addEventListener("DOMContentLoaded", renderTimeBlocks);
+  document.addEventListener("DOMContentLoaded", () => {
+    renderTimeBlocks();
+    // Ejecutar ciclo cada 1000 milisegundos (1 segundo)
+    setInterval(fetchLiveNews, 1000);
+  });
 </script>
 
 </body>
