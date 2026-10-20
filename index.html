@@ -3,100 +3,198 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario Económico EE. UU. (Hoy)</title>
+  <title>Dashboard Económico EE. UU. (USD) - BTC Impact</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f9f9f9;
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    .calendar-container {
-      max-width: 1000px;
+    body {
+      background-color: #121824;
+      color: #e1e7ec;
+      margin: 0;
+      padding: 20px;
+    }
+    .dashboard-container {
+      max-width: 1100px;
       margin: 0 auto;
     }
-
-    /* Oculta las filas de noticias que NO corresponden a USD */
-    #economicCalendarWidget iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1e293b;
+      padding: 15px 25px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #334155;
     }
+    .header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: #38bdf8;
+    }
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+    }
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      background-color: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #1e293b;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+    }
+    th {
+      background-color: #0f172a;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    tr {
+      border-bottom: 1px solid #334155;
+    }
+    tr:hover {
+      background-color: #334155;
+    }
+    .flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: bold;
+      color: #f59e0b;
+    }
+    .importance-high {
+      color: #ef4444;
+      font-weight: bold;
+    }
+    .importance-med {
+      color: #f59e0b;
+    }
+    .importance-low {
+      color: #94a3b8;
+    }
+    .positive { color: #22c55e; font-weight: bold; }
+    .negative { color: #ef4444; font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <div class="calendar-container">
-    <h2>Calendario Económico EE. UU. (Hoy)</h2>
-    
-    <economic-calendar mode="1" height="500px"></economic-calendar>
+  <div class="dashboard-container">
+    <div class="header">
+      <h1>Dashboard Económico USD (EE. UU.)</h1>
+      <div class="status-badge">
+        <div class="pulse-dot"></div>
+        <span>Hora actual: <strong id="clock">--:--:--</strong></span>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Hora</th>
+          <th>Divisa</th>
+          <th>Evento</th>
+          <th>Impacto</th>
+          <th>Actual</th>
+          <th>Pronóstico</th>
+          <th>Anterior</th>
+        </tr>
+      </thead>
+      <tbody id="events-table-body">
+        <tr>
+          <td colspan="7" style="text-align:center; color: #94a3b8;">Cargando eventos de EE. UU...</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <script>
-    class EconomicCalendar extends HTMLElement {
-      connectedCallback() {
-        if (this.querySelector('script[data-type="calendar-widget"]')) return;
+    // 1. Reloj en tiempo real (se actualiza cada segundo)
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').innerText = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-        const mode = this.getAttribute('mode') || '1'; 
-        const height = this.getAttribute('height') || '500px';
+    // 2. Consulta y renderizado de datos filtrados exclusivamente para USD
+    async function fetchUsdEvents() {
+      const today = new Date().toISOString().split('T')[0];
+      const tbody = document.getElementById('events-table-body');
 
-        this.style.display = 'block';
-        this.style.width = '100%';
-        this.style.height = height;
-        this.style.position = 'relative';
-
-        const widgetDiv = document.createElement('div');
-        widgetDiv.id = 'economicCalendarWidget';
-        widgetDiv.style.width = '100%';
-        widgetDiv.style.height = '100%';
-
-        const copyrightDiv = document.createElement('div');
-        copyrightDiv.className = 'ecw-copyright';
-        copyrightDiv.style.fontSize = '12px';
-        copyrightDiv.style.marginTop = '4px';
-        copyrightDiv.innerHTML = `
-          <a href="https://www.metatrader.com/?utm_source=calendar.widget&utm_medium=link&utm_term=economic.calendar&utm_content=visit.mql5.calendar&utm_campaign=202.calendar.widget" 
-             rel="noopener nofollow" 
-             target="_blank">
-            MetaTrader World Markets
-          </a>
-        `;
-
-        const script = document.createElement('script');
-        script.src = 'https://www.tradays.com/c/js/widgets/calendar/widget.js?v=15';
-        script.type = 'text/javascript';
-        script.async = true;
-        script.setAttribute('data-type', 'calendar-widget');
+      try {
+        // Endpoint público de eventos económicos filtrado por USD
+        const response = await fetch(`https://www.tradays.com/en/economic-calendar/widget/events?currency=USD&from=${today}&to=${today}`);
         
-        script.textContent = JSON.stringify({
-          width: '100%',
-          height: '100%',
-          mode: mode,
-          fw: 'html'
-        });
+        if (!response.ok) throw new Error('Error al obtener datos');
+        
+        const events = await response.json();
 
-        this.appendChild(widgetDiv);
-        this.appendChild(copyrightDiv);
-        this.appendChild(script);
-
-        // Ajuste manual de filtros directamente desde el almacenamiento del widget
-        this.configureUsdFilter();
-      }
-
-      configureUsdFilter() {
-        // Guarda la preferencia de USD en el almacenamiento del navegador para la sesión
-        try {
-          const calendarSettings = {
-            currencies: ["USD"],
-            importance: [1, 2, 3]
-          };
-          localStorage.setItem('tradays_widget_settings', JSON.stringify(calendarSettings));
-        } catch (e) {
-          console.warn('No se pudo establecer el filtro en localStorage:', e);
+        if (events.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No hay eventos macroeconómicos de USD programados para hoy.</td></tr>`;
+          return;
         }
+
+        tbody.innerHTML = events.map(event => {
+          const time = new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          
+          let impactText = 'Bajo';
+          let impactClass = 'importance-low';
+          if (event.importance === 3) { impactText = 'Alta (BTC)'; impactClass = 'importance-high'; }
+          else if (event.importance === 2) { impactText = 'Media'; impactClass = 'importance-med'; }
+
+          const actualClass = event.actual > event.forecast ? 'positive' : (event.actual < event.forecast ? 'negative' : '');
+
+          return `
+            <tr>
+              <td>${time}</td>
+              <td><span class="flag">🇺🇸 USD</span></td>
+              <td><strong>${event.name}</strong></td>
+              <td class="${impactClass}">${impactText}</td>
+              <td class="${actualClass}">${event.actual ?? '--'}</td>
+              <td>${event.forecast ?? '--'}</td>
+              <td>${event.previous ?? '--'}</td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (error) {
+        // En caso de bloqueo CORS o error de red en entorno local, muestra un estado claro
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center; color: #f59e0b;">
+              Para consultar datos directos vía API sin restricciones de navegador, se requiere ejecutar este código desde un servidor web o backend local.
+            </td>
+          </tr>
+        `;
       }
     }
 
-    customElements.define('economic-calendar', EconomicCalendar);
+    // Carga inicial y actualización automática cada 30 segundos
+    fetchUsdEvents();
+    setInterval(fetchUsdEvents, 30000);
   </script>
 </body>
 </html>
