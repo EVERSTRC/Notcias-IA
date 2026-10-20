@@ -3,299 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard BTCUSD & Analytics Macro - Realtime Binance</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
-          colors: {
-            binance: {
-              black: '#0b0e11', dark: '#12161f', card: '#1e232d',
-              border: '#2b313a', green: '#0ecb81', red: '#f6465d', yellow: '#f0b90b'
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <title>Calendario Económico con Análisis</title>
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #0b0e11; color: #eaecef; }
+    body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 20px; }
+    .calendar-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background-color: #2c3e50; color: white; }
+    .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; display: inline-block; }
+    .bullish { background-color: #27ae60; } /* Sube */
+    .bearish { background-color: #e74c3c; } /* Baja */
+    .neutral { background-color: #7f8c8d; } /* Neutral */
+    .high-impact { color: #d35400; font-weight: bold; }
   </style>
 </head>
-<body class="min-h-screen bg-binance-black text-gray-100 flex flex-col justify-between p-3 sm:p-6">
+<body>
 
-  <!-- Header & Live Bar -->
-  <header class="max-w-7xl mx-auto w-full mb-6">
-    <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-binance-dark p-4 rounded-2xl border border-binance-border shadow-xl">
-      <div>
-        <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
-          BTCUSD <span class="text-xs font-semibold px-2 py-0.5 rounded bg-binance-yellow/20 text-binance-yellow border border-binance-yellow/30">QUANT MACRO ENGINE (PURE HTML)</span>
-        </h1>
-        <p class="text-xs text-gray-400">Trading Algorítmico BTCUSD • Autónomo en HTML Client-Side • Sin Instalaciones Extra</p>
-      </div>
+<div class="calendar-card">
+  <h2>Calendario Económico con Análisis Directivo</h2>
+  <table id="newsTable">
+    <thead>
+      <tr>
+        <th>Hora</th>
+        <th>Divisa</th>
+        <th>Evento</th>
+        <th>Previo</th>
+        <th>Previsión</th>
+        <th>Actual</th>
+        <th>Análisis / Sesgo</th>
+      </tr>
+    </thead>
+    <tbody id="calendarBody">
+      <!-- Datos inyectados dinámicamente -->
+    </tbody>
+  </table>
+</div>
 
-      <div class="flex flex-wrap items-center gap-3 bg-binance-black/60 px-4 py-2 rounded-xl border border-binance-border">
-        <div id="status-pulse" class="w-3 h-3 rounded-full bg-binance-yellow animate-ping"></div>
-        <div class="text-xs">
-          <div class="font-bold text-gray-200" id="ws-status">Conectando Binance...</div>
-          <div class="text-binance-yellow font-mono text-[11px] font-semibold" id="cr-clock">CR Time: --:--:--</div>
-        </div>
-        <div id="sync-status-badge" class="ml-2 px-2.5 py-1 text-[11px] font-semibold rounded bg-emerald-950/60 text-binance-green border border-emerald-800/60 flex items-center gap-1 font-mono">
-          ● Auto-Sync HTML Activo
-        </div>
-      </div>
-    </div>
-  </header>
+<script>
+  // Datos de prueba simulando la API de eventos económicos
+  const economicEvents = [
+    { time: "08:30", currency: "USD", event: "Nóminas No Agrícolas (NFP)", previous: 150, forecast: 180, actual: 220, impact: "High" },
+    { time: "10:00", currency: "USD", event: "Ventas de Viviendas Pendientes", previous: 0.8, forecast: 1.0, actual: 0.5, impact: "Medium" },
+    { time: "14:00", currency: "EUR", event: "Decisión de Tipos de Interés BCE", previous: 4.25, forecast: 4.25, actual: 4.25, impact: "High" }
+  ];
 
-  <!-- Main Grid -->
-  <main class="max-w-7xl mx-auto w-full space-y-6 flex-grow">
+  function analyzeEvent(actual, forecast) {
+    if (actual === null || actual === undefined) return { text: "Pendiente", class: "neutral" };
+    if (actual > forecast) return { text: "▲ Alcista (Sube)", class: "bullish" };
+    if (actual < forecast) return { text: "▼ Bajista (Baja)", class: "bearish" };
+    return { text: "▬ Neutral", class: "neutral" };
+  }
 
-    <!-- Top Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
-      <!-- Price Card -->
-      <div class="md:col-span-4 bg-binance-card p-5 rounded-2xl border border-binance-border shadow-lg">
-        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Precio Activo: BTCUSD</span>
-        <div id="btc-price" class="text-3xl sm:text-4xl font-black font-mono text-white tracking-tight my-1">$ --.--</div>
-        <div id="price-change-badge" class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg bg-gray-800 text-gray-300">24h: --%</div>
-      </div>
+  function renderCalendar() {
+    const tbody = document.getElementById("calendarBody");
+    tbody.innerHTML = "";
 
-      <!-- Technical Range Bar -->
-      <div class="md:col-span-4 bg-binance-card p-5 rounded-2xl border border-binance-border shadow-lg">
-        <div class="flex justify-between items-center mb-2">
-          <span class="text-xs font-bold uppercase text-gray-400">Posición en Rango 24h</span>
-          <span id="tech-percentage" class="text-xs font-bold font-mono text-binance-yellow">50%</span>
-        </div>
-        <div class="text-2xl font-bold font-mono text-white mb-2" id="range-status">Calculando...</div>
-        <div class="w-full bg-binance-black rounded-full h-3 p-0.5 border border-gray-800 overflow-hidden">
-          <div id="tech-bar" class="bg-binance-yellow h-full rounded-full transition-all duration-300" style="width: 50%"></div>
-        </div>
-      </div>
+    economicEvents.forEach(item => {
+      const analysis = analyzeEvent(item.actual, item.forecast);
+      const row = document.createElement("tr");
 
-      <!-- Quant Signal Box -->
-      <div id="signal-card" class="md:col-span-4 bg-binance-card p-5 rounded-2xl border-2 border-gray-700 shadow-xl text-center">
-        <span class="text-xs font-bold uppercase text-gray-400">Señal Cuantitativa Final</span>
-        <div id="signal-output" class="text-3xl font-black text-binance-yellow my-3">EVALUANDO...</div>
-        <div class="grid grid-cols-2 gap-2 text-xs bg-binance-black/80 p-2.5 rounded-xl border border-gray-800 font-mono">
-          <div>Puntaje Macro: <span id="score-macro" class="font-bold text-white">0.0</span></div>
-          <div>Puntaje Técnico: <span id="score-tech" class="font-bold text-white">0.0</span></div>
-        </div>
-      </div>
-    </div>
+      row.innerHTML = `
+        <td>${item.time}</td>
+        <td><strong>${item.currency}</strong></td>
+        <td><span class="${item.impact === 'High' ? 'high-impact' : ''}">${item.event}</span></td>
+        <td>${item.previous}</td>
+        <td>${item.forecast}</td>
+        <td><strong>${item.actual ?? 'N/A'}</strong></td>
+        <td><span class="badge ${analysis.class}">${analysis.text}</span></td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
 
-    <!-- Macro Table -->
-    <div class="bg-binance-card rounded-2xl p-5 border border-binance-border shadow-xl space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-800">
-        <h2 class="text-lg font-bold text-white flex items-center gap-2">
-          🌐 Calendario Económico Macro (Sincronización Autónoma HTML)
-        </h2>
-        <span id="last-sync-time" class="text-xs font-mono text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded border border-emerald-800">
-          Última verificación: En espera...
-        </span>
-      </div>
+  renderCalendar();
+</script>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left min-w-[700px]">
-          <thead>
-            <tr class="text-[11px] font-bold text-gray-400 uppercase border-b border-gray-800">
-              <th class="py-3 px-3">Hora (Costa Rica)</th>
-              <th class="py-3 px-3">Evento Macro</th>
-              <th class="py-3 px-3 text-center">Previsión</th>
-              <th class="py-3 px-3 text-center">Dato Actual (Auto API / Editable)</th>
-              <th class="py-3 px-3 text-center">Impacto</th>
-              <th class="py-3 px-3 text-right">Dirección BTC</th>
-            </tr>
-          </thead>
-          <tbody id="macro-tbody" class="divide-y divide-gray-800/60 text-sm"></tbody>
-        </table>
-      </div>
-    </div>
-
-  </main>
-
-  <script>
-    let currentPrice = 0, currentTechPos = 50;
-
-    // Red de proxies públicos directamente soportados en navegador
-    const PROXIES = [
-      url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-      url => `https://corsproxy.io/?${encodeURIComponent(url)}`
-    ];
-    let activeProxyIndex = 0;
-
-    const macroData = [
-      { id: "import_price", date: "06:30 AM", name: "Índice Precios Importación (MoM)", forecast: 0.9, actual: null, unit: "%", weight: 1.5, invert: true },
-      { id: "export_price", date: "06:30 AM", name: "Índice Precios Exportación (MoM)", forecast: 1.0, actual: null, unit: "%", weight: 1.5, invert: true },
-      { id: "cpi", date: "06:30 AM", name: "CPI EE.UU. (Inflación Subyacente)", forecast: 0.3, actual: null, unit: "%", weight: 2.0, invert: true },
-      { id: "pmi", date: "08:00 AM", name: "PMI Servicios ISM / Michigan", forecast: 51.5, actual: null, unit: "pts", weight: 1.0, invert: false }
-    ];
-
-    // Petición con salto automático de Proxy para evadir CORS/Cloudflare desde HTML
-    async function fetchWithProxy(targetUrl) {
-      const proxyFunc = PROXIES[activeProxyIndex];
-      try {
-        const res = await fetch(proxyFunc(targetUrl));
-        if (!res.ok) throw new Error("Proxy error");
-        return await res.text();
-      } catch (err) {
-        activeProxyIndex = (activeProxyIndex + 1) % PROXIES.length; // Cambiar al siguiente proxy
-        throw err;
-      }
-    }
-
-    // Auto-Fetch continuo que corre dentro del propio navegador
-    async function autoSyncMacroData() {
-      const syncBadge = document.getElementById("last-sync-time");
-      try {
-        const raw = await fetchWithProxy("https://financialmodelingprep.com/api/v3/economic_calendar?apikey=demo");
-        if (raw) {
-          const events = JSON.parse(raw);
-          if (Array.isArray(events)) {
-            events.forEach(item => {
-              if (item.actual !== null && item.actual !== undefined) {
-                const name = (item.event || "").toLowerCase();
-                if (name.includes("import")) macroData[0].actual = parseFloat(item.actual);
-                if (name.includes("export")) macroData[1].actual = parseFloat(item.actual);
-                if (name.includes("cpi")) macroData[2].actual = parseFloat(item.actual);
-                if (name.includes("pmi")) macroData[3].actual = parseFloat(item.actual);
-              }
-            });
-          }
-        }
-        if (syncBadge) {
-          syncBadge.innerText = `Sincronizado: ${new Date().toLocaleTimeString("es-CR")}`;
-        }
-      } catch (e) {
-        if (syncBadge) {
-          syncBadge.innerText = `Reintentando canal... (${new Date().toLocaleTimeString("es-CR")})`;
-        }
-      }
-
-      renderMacroTable();
-      calculateSignal();
-    }
-
-    function calculateSignal() {
-      let macroScore = 0;
-      macroData.forEach(item => {
-        if (item.actual !== null && !isNaN(item.actual)) {
-          const diff = item.actual - item.forecast;
-          const isBullish = item.invert ? diff < 0 : diff > 0;
-          macroScore += isBullish ? item.weight : -item.weight;
-        }
-      });
-
-      const techScore = ((currentTechPos - 50) / 10).toFixed(1);
-      document.getElementById("score-macro").innerText = macroScore >= 0 ? `+${macroScore.toFixed(1)}` : macroScore.toFixed(1);
-      document.getElementById("score-tech").innerText = techScore >= 0 ? `+${techScore}` : techScore;
-
-      const total = macroScore + parseFloat(techScore);
-      const output = document.getElementById("signal-output");
-
-      if (total >= 2.0) {
-        output.innerText = "🚀 COMPRA FUERTE";
-        output.className = "text-3xl font-black text-binance-green my-3";
-      } else if (total <= -2.0) {
-        output.innerText = "🔻 VENTA FUERTE";
-        output.className = "text-3xl font-black text-binance-red my-3";
-      } else {
-        output.innerText = "⚖️ NEUTRAL / ESPERAR";
-        output.className = "text-3xl font-black text-binance-yellow my-3";
-      }
-    }
-
-    function renderMacroTable() {
-      const tbody = document.getElementById("macro-tbody");
-      tbody.innerHTML = "";
-
-      macroData.forEach((item, index) => {
-        const tr = document.createElement("tr");
-        const val = item.actual !== null && !isNaN(item.actual) ? item.actual : "";
-        const isPending = item.actual === null || isNaN(item.actual);
-        
-        let statusBadge = `<span class="px-2 py-1 text-xs rounded font-bold bg-yellow-950 text-binance-yellow border border-yellow-800">PENDIENTE ⏳</span>`;
-        if (!isPending) {
-          const diff = item.actual - item.forecast;
-          const isBullish = item.invert ? diff < 0 : diff > 0;
-          statusBadge = isBullish 
-            ? `<span class="px-2 py-1 text-xs rounded font-bold bg-emerald-950 text-binance-green border border-emerald-800">BULLISH 🟢</span>`
-            : `<span class="px-2 py-1 text-xs rounded font-bold bg-rose-950 text-binance-red border border-rose-800">BEARISH 🔴</span>`;
-        }
-
-        tr.innerHTML = `
-          <td class="py-3 px-3 font-mono text-xs text-gray-300">${item.date}</td>
-          <td class="py-3 px-3 font-bold text-gray-100">${item.name}</td>
-          <td class="py-3 px-3 text-center font-mono text-gray-400">${item.forecast} ${item.unit}</td>
-          <td class="py-3 px-3 text-center font-mono">
-            <input type="text" value="${val}" placeholder="--" 
-                   oninput="onManualInput(${index}, this.value)"
-                   class="w-24 bg-binance-black border border-gray-700 rounded px-2 py-1 text-center text-binance-yellow font-bold focus:border-binance-yellow focus:outline-none">
-          </td>
-          <td class="py-3 px-3 text-center">${statusBadge}</td>
-          <td class="py-3 px-3 text-right font-mono font-bold ${!isPending ? (item.actual > item.forecast ? 'text-binance-red' : 'text-binance-green') : 'text-gray-500'}">
-            ${!isPending ? (item.actual > item.forecast ? '-1.5 pts' : '+1.5 pts') : '0.0 pts'}
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function onManualInput(idx, val) {
-      const parsed = parseFloat(val.replace('%', ''));
-      macroData[idx].actual = isNaN(parsed) ? null : parsed;
-      calculateSignal();
-    }
-
-    // Ticker oficial de Binance vía WebSocket
-    function initBinanceWS() {
-      const ws = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@ticker");
-      ws.onmessage = (e) => {
-        const d = JSON.parse(e.data);
-        currentPrice = parseFloat(d.c);
-        const high = parseFloat(d.h);
-        const low = parseFloat(d.l);
-
-        document.getElementById("btc-price").innerText = `$ ${currentPrice.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-        document.getElementById("ws-status").innerText = "Binance WS: Conectado";
-
-        if (high > low) {
-          currentTechPos = Math.min(Math.max(((currentPrice - low) / (high - low)) * 100, 0), 100);
-          document.getElementById("tech-percentage").innerText = `${currentTechPos.toFixed(1)}%`;
-          document.getElementById("tech-bar").style.width = `${currentTechPos}%`;
-          
-          const rangeElem = document.getElementById("range-status");
-          if (currentTechPos > 70) {
-            rangeElem.innerText = "Zona de Resistencia";
-            rangeElem.className = "text-2xl font-bold font-mono text-binance-red mb-2";
-          } else if (currentTechPos < 30) {
-            rangeElem.innerText = "Zona de Soporte";
-            rangeElem.className = "text-2xl font-bold font-mono text-binance-green mb-2";
-          } else {
-            rangeElem.innerText = "Zona Neutral";
-            rangeElem.className = "text-2xl font-bold font-mono text-binance-yellow mb-2";
-          }
-        }
-        calculateSignal();
-      };
-      ws.onclose = () => setTimeout(initBinanceWS, 3000);
-    }
-
-    // Reloj Costa Rica (UTC-6)
-    setInterval(() => {
-      document.getElementById("cr-clock").innerText = "CR Time: " + new Date().toLocaleTimeString("es-CR");
-    }, 1000);
-
-    // Bucle de consulta automatizada en HTML (cada 2 segundos)
-    setInterval(autoSyncMacroData, 2000);
-
-    window.onload = () => {
-      renderMacroTable();
-      initBinanceWS();
-      autoSyncMacroData();
-    };
-  </script>
 </body>
 </html>
