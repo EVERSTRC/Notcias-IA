@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Macro EE.UU. con Registro Matutino & AI BTC</title>
+  <title>Dashboard Macro EE.UU. & Impacto BTC</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #e2e8f0; margin: 0; padding: 20px; }
@@ -58,7 +58,6 @@
     <div class="dashboard-header">
       <h2>🇺🇸 Noticias EE.UU. (Desde las 06:30 AM) & Impacto BTC</h2>
       
-      <!-- FILTROS -->
       <div class="controls">
         <label for="importanceFilter">Importancia:</label>
         <select id="importanceFilter" onchange="renderDashboard()">
@@ -82,7 +81,7 @@
       <button class="tab-btn" id="tabPendingBtn" onclick="switchTab('PENDING')">Pendientes Próximas (<span id="pendingCount">0</span>)</button>
     </div>
 
-    <!-- TABLA ACTUALIZADAS (INCLUYE NOTICIAS DE LAS 06:30 AM) -->
+    <!-- TABLA ACTUALIZADAS (CON LAS DATOS DE LAS 06:30 AM REALES) -->
     <div id="updatedView" class="table-container">
       <table>
         <thead>
@@ -120,9 +119,9 @@
       </table>
     </div>
 
-    <!-- SIMULADOR DE INGRESO MANUAL -->
+    <!-- SIMULADOR -->
     <div class="update-box">
-      <span style="font-size: 13px; color: #94a3b8; font-weight: bold;">🧪 Simular o Registrar Dato Reciente (ej. 06:30 AM):</span>
+      <span style="font-size: 13px; color: #94a3b8; font-weight: bold;">🧪 Simular o Registrar Dato Reciente:</span>
       <select id="simEventSelect"></select>
       <input type="number" id="simActualValue" placeholder="Valor actual publicado" step="0.01" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:6px 10px; border-radius:4px; width:160px;">
       <button onclick="simulateNewsUpdate()" style="background:#0284c7; color:white; border:none;">Procesar con IA</button>
@@ -146,29 +145,27 @@
 </div>
 
 <script>
-  // Eventos de EE.UU., incluyendo los de la madrugada/mañana (06:30 AM)
+  // Noticias reales de las 06:30 AM ingresadas y evaluadas
   let newsDatabase = [
-    // Noticias ya publicadas a las 06:30 AM
-    { id: 101, date: "2026-10-20", time: "06:30", origin: "USD", event: "Índice de Precios de Importación (m/m)", importance: "MEDIUM", affectsBTC: true, previous: "-0.2%", forecast: 0.1, actual: -0.3, inverse: true },
-    { id: 102, date: "2026-10-20", time: "06:30", origin: "USD", event: "Futuros de Índices Macro y Liquidez Fed", importance: "HIGH", affectsBTC: true, previous: "101.5", forecast: 102.0, actual: 100.8, inverse: true },
+    { id: 201, date: "2026-10-20", time: "06:30", origin: "USD", event: "Inicios de construcción de Nueva Vivienda", importance: "MEDIUM", affectsBTC: true, previous: "1.288M", forecast: 1.468, actual: 1.221, inverse: true },
+    { id: 202, date: "2026-10-20", time: "06:30", origin: "USD", event: "Permisos de Construcción", importance: "MEDIUM", affectsBTC: true, previous: "1.403M", forecast: 1.441, actual: 1.400, inverse: true },
+    { id: 203, date: "2026-10-20", time: "06:30", origin: "USD", event: "Inicios de Construcción de nueva vivienda m/m", importance: "LOW", affectsBTC: false, previous: "-5.9%", forecast: -14.0, actual: -5.2, inverse: false },
+    { id: 204, date: "2026-10-20", time: "06:30", origin: "USD", event: "Permisos de Construcción m/m", importance: "LOW", affectsBTC: false, previous: "-2.1%", forecast: 1.2, actual: -0.2, inverse: false },
     
-    // Noticias del día pendientes
-    { id: 1, date: "2026-10-20", time: "08:30", origin: "USD", event: "Permisos de Construcción", importance: "LOW", affectsBTC: false, previous: "1.47M", forecast: 1.45, actual: null, inverse: false },
-    { id: 2, date: "2026-10-20", time: "14:00", origin: "USD", event: "Decisión de Tipos de Interés (FOMC)", importance: "HIGH", affectsBTC: true, previous: "5.25%", forecast: 5.00, actual: null, inverse: true },
-    { id: 3, date: "2026-10-21", time: "08:30", origin: "USD", event: "Índice de Precios al Consumidor (IPC)", importance: "HIGH", affectsBTC: true, previous: "3.1%", forecast: 2.9, actual: null, inverse: true },
-    { id: 4, date: "2026-10-22", time: "08:30", origin: "USD", event: "Nóminas No Agrícolas (NFP)", importance: "HIGH", affectsBTC: true, previous: "180K", forecast: 150, actual: null, inverse: true }
+    // Noticias próximas a las 08:00 AM
+    { id: 205, date: "2026-10-20", time: "08:00", origin: "USD", event: "Ventas de Viviendas Pendientes m/m", importance: "MEDIUM", affectsBTC: true, previous: "0.3%", forecast: -0.9, actual: null, inverse: true },
+    { id: 206, date: "2026-10-20", time: "08:00", origin: "USD", event: "Ventas de Viviendas Pendientes a/a", importance: "LOW", affectsBTC: false, previous: "-4.7%", forecast: 0.7, actual: null, inverse: false }
   ];
 
   let currentTab = "UPDATED";
 
-  // Motor de evaluación para Bitcoin (BTC/USD)
   function runAIAnalysis(eventItem) {
     const { actual, forecast, inverse, affectsBTC } = eventItem;
     if (actual === null) return { text: "Esperando dato...", class: "neutral", prediction: "NEUTRAL" };
 
     if (!affectsBTC) {
       return {
-        text: "Dato publicado de EE.UU. Sin impacto directo relevante en Bitcoin.",
+        text: "Dato menor de construcción en EE.UU. Impacto marginal en el volumen de BTC.",
         class: "neutral",
         prediction: "▬ NEUTRAL / SIN IMPACTO"
       };
@@ -176,7 +173,7 @@
 
     let isPositive = false;
     if (inverse) {
-      // Si el dato actual de inflación o tasa es MENOR a la previsión -> Alcista para BTC
+      // Dato peor al esperado (menor que el forecast) frena la economía y la inflación -> Impulsa recortes Fed -> Alcista BTC
       isPositive = actual < forecast;
     } else {
       isPositive = actual > forecast;
@@ -184,7 +181,7 @@
 
     if (actual === forecast) {
       return {
-        text: "Dato publicado exactamente según lo previsto. Impacto neutro o moderado.",
+        text: "Dato en línea con lo previsto. Sin sorpresa para el mercado cripto.",
         class: "neutral",
         prediction: "▬ NEUTRAL"
       };
@@ -192,13 +189,13 @@
 
     if (isPositive) {
       return {
-        text: `Dato publicado (${actual} vs ${forecast} prev). Menor presión macro/inflacionaria: Impulsa el precio de Bitcoin.`,
+        text: `Dato publicado (${actual} vs ${forecast} prev). Caída mayor a la prevista en construcción sugiere menor presión macro: Sesgo positivo para BTC.`,
         class: "bullish",
         prediction: "▲ ALCISTA (BTC Sube)"
       };
     } else {
       return {
-        text: `Dato publicado (${actual} vs ${forecast} prev). Mayor rigor macro/fortaleza de USD: Presión bajista sobre Bitcoin.`,
+        text: `Dato publicado (${actual} vs ${forecast} prev). Mayor actividad económica genera presión en tasas: Sesgo negativo en BTC.`,
         class: "bearish",
         prediction: "▼ BAJISTA (BTC Baja)"
       };
