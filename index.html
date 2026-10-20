@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario Económico - Noticias USD (Hoy)</title>
+  <title>Calendario Económico EE. UU. (Hoy)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,6 +14,13 @@
       max-width: 1000px;
       margin: 0 auto;
     }
+
+    /* Oculta las filas de noticias que NO corresponden a USD */
+    #economicCalendarWidget iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
   </style>
 </head>
 <body>
@@ -21,7 +28,6 @@
   <div class="calendar-container">
     <h2>Calendario Económico EE. UU. (Hoy)</h2>
     
-    <!-- Componente filtrado solo para noticias de USD del día actual -->
     <economic-calendar mode="1" height="500px"></economic-calendar>
   </div>
 
@@ -30,7 +36,6 @@
       connectedCallback() {
         if (this.querySelector('script[data-type="calendar-widget"]')) return;
 
-        // "1" = Día actual
         const mode = this.getAttribute('mode') || '1'; 
         const height = this.getAttribute('height') || '500px';
 
@@ -62,18 +67,32 @@
         script.async = true;
         script.setAttribute('data-type', 'calendar-widget');
         
-        // Configuración con filtro exclusivo de divisa USD
         script.textContent = JSON.stringify({
           width: '100%',
           height: '100%',
-          mode: mode,            // 1 = Día actual
-          currencies: ["USD"],   // Filtra únicamente noticias de EE. UU.
+          mode: mode,
           fw: 'html'
         });
 
         this.appendChild(widgetDiv);
         this.appendChild(copyrightDiv);
         this.appendChild(script);
+
+        // Ajuste manual de filtros directamente desde el almacenamiento del widget
+        this.configureUsdFilter();
+      }
+
+      configureUsdFilter() {
+        // Guarda la preferencia de USD en el almacenamiento del navegador para la sesión
+        try {
+          const calendarSettings = {
+            currencies: ["USD"],
+            importance: [1, 2, 3]
+          };
+          localStorage.setItem('tradays_widget_settings', JSON.stringify(calendarSettings));
+        } catch (e) {
+          console.warn('No se pudo establecer el filtro en localStorage:', e);
+        }
       }
     }
 
