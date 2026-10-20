@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Macro EE.UU. & Impacto en Bitcoin</title>
+  <title>Dashboard Macro EE.UU. con Registro Matutino & AI BTC</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #e2e8f0; margin: 0; padding: 20px; }
@@ -28,13 +28,12 @@
     th { background-color: #0f172a; color: #94a3b8; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
     tr:hover { background-color: #1e293b; }
     
-    /* Badges de Importancia y BTC */
+    /* Badges */
     .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
     .imp-high { background: rgba(220, 38, 38, 0.2); color: #f87171; border: 1px solid #ef4444; }
     .imp-medium { background: rgba(217, 119, 6, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
     .imp-low { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
 
-    /* Distintivo para noticias que afectan a BTC directamente */
     .btc-tag { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #d97706; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 6px; }
 
     .ai-signal { padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; }
@@ -57,7 +56,7 @@
   <!-- DASHBOARD PRINCIPAL -->
   <div class="card">
     <div class="dashboard-header">
-      <h2>🇺🇸 Noticias EE.UU. & Análisis IA para Bitcoin</h2>
+      <h2>🇺🇸 Noticias EE.UU. (Desde las 06:30 AM) & Impacto BTC</h2>
       
       <!-- FILTROS -->
       <div class="controls">
@@ -79,31 +78,12 @@
 
     <!-- PESTAÑAS -->
     <div class="tabs">
-      <button class="tab-btn active" id="tabPendingBtn" onclick="switchTab('PENDING')">Pendientes EE.UU. (<span id="pendingCount">0</span>)</button>
-      <button class="tab-btn" id="tabUpdatedBtn" onclick="switchTab('UPDATED')">Actualizadas con Análisis AI (<span id="updatedCount">0</span>)</button>
+      <button class="tab-btn active" id="tabUpdatedBtn" onclick="switchTab('UPDATED')">Noticias Publicadas / Con Datos (<span id="updatedCount">0</span>)</button>
+      <button class="tab-btn" id="tabPendingBtn" onclick="switchTab('PENDING')">Pendientes Próximas (<span id="pendingCount">0</span>)</button>
     </div>
 
-    <!-- TABLA PENDIENTES -->
-    <div id="pendingView" class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th>Origen</th>
-            <th>Noticia / Evento de EE.UU.</th>
-            <th>Importancia</th>
-            <th>Previo</th>
-            <th>Previsión</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody id="pendingTableBody"></tbody>
-      </table>
-    </div>
-
-    <!-- TABLA ACTUALIZADAS CON ANÁLISIS IA -->
-    <div id="updatedView" class="table-container" style="display: none;">
+    <!-- TABLA ACTUALIZADAS (INCLUYE NOTICIAS DE LAS 06:30 AM) -->
+    <div id="updatedView" class="table-container">
       <table>
         <thead>
           <tr>
@@ -121,16 +101,35 @@
       </table>
     </div>
 
-    <!-- SIMULADOR INTERACTIVO PARA ACTUALIZAR RESULTADO -->
+    <!-- TABLA PENDIENTES -->
+    <div id="pendingView" class="table-container" style="display: none;">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Origen</th>
+            <th>Noticia / Evento de EE.UU.</th>
+            <th>Importancia</th>
+            <th>Previo</th>
+            <th>Previsión</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="pendingTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- SIMULADOR DE INGRESO MANUAL -->
     <div class="update-box">
-      <span style="font-size: 13px; color: #94a3b8; font-weight: bold;">🧪 Simular actualización de noticia:</span>
+      <span style="font-size: 13px; color: #94a3b8; font-weight: bold;">🧪 Simular o Registrar Dato Reciente (ej. 06:30 AM):</span>
       <select id="simEventSelect"></select>
-      <input type="number" id="simActualValue" placeholder="Nuevo valor actual" step="0.01" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:6px 10px; border-radius:4px; width:140px;">
-      <button onclick="simulateNewsUpdate()" style="background:#0284c7; color:white; border:none;">Actualizar Dato</button>
+      <input type="number" id="simActualValue" placeholder="Valor actual publicado" step="0.01" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:6px 10px; border-radius:4px; width:160px;">
+      <button onclick="simulateNewsUpdate()" style="background:#0284c7; color:white; border:none;">Procesar con IA</button>
     </div>
   </div>
 
-  <!-- WIDGET INTEGRADO OFICIAL -->
+  <!-- WIDGET INTEGRADO OFICIAL TRADAYS -->
   <div class="card">
     <h2>📅 Calendario Económico Global en Vivo (MQL5 / Tradays)</h2>
     <div class="calendar-widget-container">
@@ -147,30 +146,29 @@
 </div>
 
 <script>
-  // Eventos económicos de EE.UU.
-  // La propiedad `affectsBTC: true` marca los eventos que impactan directamente a Bitcoin
+  // Eventos de EE.UU., incluyendo los de la madrugada/mañana (06:30 AM)
   let newsDatabase = [
-    { id: 1, date: "2026-10-20", time: "14:00", origin: "USD", event: "Decisión de Tipos de Interés (FOMC)", importance: "HIGH", affectsBTC: true, previous: "5.25%", forecast: 5.00, actual: null, inverse: true },
-    { id: 2, date: "2026-10-20", time: "08:30", origin: "USD", event: "Permisos de Construcción", importance: "LOW", affectsBTC: false, previous: "1.47M", forecast: 1.45, actual: null, inverse: false },
+    // Noticias ya publicadas a las 06:30 AM
+    { id: 101, date: "2026-10-20", time: "06:30", origin: "USD", event: "Índice de Precios de Importación (m/m)", importance: "MEDIUM", affectsBTC: true, previous: "-0.2%", forecast: 0.1, actual: -0.3, inverse: true },
+    { id: 102, date: "2026-10-20", time: "06:30", origin: "USD", event: "Futuros de Índices Macro y Liquidez Fed", importance: "HIGH", affectsBTC: true, previous: "101.5", forecast: 102.0, actual: 100.8, inverse: true },
+    
+    // Noticias del día pendientes
+    { id: 1, date: "2026-10-20", time: "08:30", origin: "USD", event: "Permisos de Construcción", importance: "LOW", affectsBTC: false, previous: "1.47M", forecast: 1.45, actual: null, inverse: false },
+    { id: 2, date: "2026-10-20", time: "14:00", origin: "USD", event: "Decisión de Tipos de Interés (FOMC)", importance: "HIGH", affectsBTC: true, previous: "5.25%", forecast: 5.00, actual: null, inverse: true },
     { id: 3, date: "2026-10-21", time: "08:30", origin: "USD", event: "Índice de Precios al Consumidor (IPC)", importance: "HIGH", affectsBTC: true, previous: "3.1%", forecast: 2.9, actual: null, inverse: true },
-    { id: 4, date: "2026-10-21", time: "10:30", origin: "USD", event: "Inventarios de Petróleo crudo de la AIE", importance: "MEDIUM", affectsBTC: false, previous: "-2.1M", forecast: -1.0, actual: null, inverse: false },
-    { id: 5, date: "2026-10-22", time: "08:30", origin: "USD", event: "Nóminas No Agrícolas (NFP)", importance: "HIGH", affectsBTC: true, previous: "180K", forecast: 150, actual: null, inverse: true },
-    { id: 6, date: "2026-10-22", time: "08:30", origin: "USD", event: "Nuevas Peticiones de Subsidio por Desempleo", importance: "MEDIUM", affectsBTC: true, previous: "210K", forecast: 215, actual: null, inverse: true },
-    { id: 7, date: "2026-10-23", time: "10:00", origin: "USD", event: "Ventas de Viviendas de Segunda Mano", importance: "LOW", affectsBTC: false, previous: "4.0M", forecast: 4.1, actual: null, inverse: false },
-    // Noticia con dato ya publicado
-    { id: 8, date: "2026-10-19", time: "08:30", origin: "USD", event: "Índice Manufacturero de la Empire State", importance: "MEDIUM", affectsBTC: true, previous: "-11.5", forecast: -6.0, actual: -11.9, inverse: true }
+    { id: 4, date: "2026-10-22", time: "08:30", origin: "USD", event: "Nóminas No Agrícolas (NFP)", importance: "HIGH", affectsBTC: true, previous: "180K", forecast: 150, actual: null, inverse: true }
   ];
 
-  let currentTab = "PENDING";
+  let currentTab = "UPDATED";
 
-  // Motor tipo IA para evaluar la dirección de Bitcoin
+  // Motor de evaluación para Bitcoin (BTC/USD)
   function runAIAnalysis(eventItem) {
     const { actual, forecast, inverse, affectsBTC } = eventItem;
     if (actual === null) return { text: "Esperando dato...", class: "neutral", prediction: "NEUTRAL" };
 
     if (!affectsBTC) {
       return {
-        text: "Dato publicado de EE.UU. Sin impacto relevante esperado en Bitcoin.",
+        text: "Dato publicado de EE.UU. Sin impacto directo relevante en Bitcoin.",
         class: "neutral",
         prediction: "▬ NEUTRAL / SIN IMPACTO"
       };
@@ -178,7 +176,7 @@
 
     let isPositive = false;
     if (inverse) {
-      // Si menor inflación/tasa => Positivo para BTC
+      // Si el dato actual de inflación o tasa es MENOR a la previsión -> Alcista para BTC
       isPositive = actual < forecast;
     } else {
       isPositive = actual > forecast;
@@ -186,7 +184,7 @@
 
     if (actual === forecast) {
       return {
-        text: "Dato en línea con lo previsto. Reacción moderada en BTC.",
+        text: "Dato publicado exactamente según lo previsto. Impacto neutro o moderado.",
         class: "neutral",
         prediction: "▬ NEUTRAL"
       };
@@ -194,13 +192,13 @@
 
     if (isPositive) {
       return {
-        text: `Dato favorable (${actual} vs ${forecast} prev). Proporciona impulso alcista a Bitcoin.`,
+        text: `Dato publicado (${actual} vs ${forecast} prev). Menor presión macro/inflacionaria: Impulsa el precio de Bitcoin.`,
         class: "bullish",
         prediction: "▲ ALCISTA (BTC Sube)"
       };
     } else {
       return {
-        text: `Dato desfavorable (${actual} vs ${forecast} prev). Genera presión bajista sobre Bitcoin.`,
+        text: `Dato publicado (${actual} vs ${forecast} prev). Mayor rigor macro/fortaleza de USD: Presión bajista sobre Bitcoin.`,
         class: "bearish",
         prediction: "▼ BAJISTA (BTC Baja)"
       };
@@ -233,10 +231,7 @@
     let updatedCount = 0;
 
     newsDatabase.forEach(item => {
-      // Filtro de Importancia
       if (filterImp !== "ALL" && item.importance !== filterImp) return;
-
-      // Filtro de solo noticias con impacto en BTC
       if (filterBtc === "BTC_ONLY" && !item.affectsBTC) return;
 
       const btcTagHtml = item.affectsBTC ? `<span class="btc-tag">⚡ BTC Directo</span>` : '';
@@ -246,7 +241,7 @@
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${formatDate(item.date)}</td>
-          <td>${item.time}</td>
+          <td><strong>${item.time}</strong></td>
           <td><strong>${item.origin}</strong></td>
           <td><strong>${item.event}</strong> ${btcTagHtml}</td>
           <td>${getImportanceBadge(item.importance)}</td>
@@ -258,7 +253,7 @@
 
         const opt = document.createElement("option");
         opt.value = item.id;
-        opt.textContent = `${item.affectsBTC ? '⚡' : ''} [${item.importance}] ${item.event}`;
+        opt.textContent = `${item.affectsBTC ? '⚡' : ''} [${item.time}] ${item.event}`;
         simSelect.appendChild(opt);
 
       } else {
@@ -267,7 +262,7 @@
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${formatDate(item.date)}</td>
-          <td>${item.time}</td>
+          <td><strong>${item.time}</strong></td>
           <td><strong>${item.event}</strong> ${btcTagHtml}</td>
           <td>${getImportanceBadge(item.importance)}</td>
           <td>${item.forecast}</td>
@@ -297,7 +292,7 @@
     const newValue = parseFloat(document.getElementById("simActualValue").value);
 
     if (isNaN(selectedId) || isNaN(newValue)) {
-      alert("Por favor selecciona una noticia y escribe un valor numérico actual.");
+      alert("Selecciona un evento e ingresa el valor numérico publicado.");
       return;
     }
 
