@@ -3,66 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario Económico para Bitcoin (BTC)</title>
+  <title>Dashboard Cripto - Calendario AI para Bitcoin</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-    .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #e2e8f0; margin: 0; padding: 20px; }
+    .container { max-width: 1300px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
     
-    .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-    h2 { margin-top: 0; color: #f1f5f9; font-size: 20px; border-bottom: 2px solid #334155; padding-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    /* Panel Principal */
+    .card { background: #151c2c; border: 1px solid #2a3447; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+    
+    /* Header y Filtros */
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid #2a3447; padding-bottom: 15px; }
+    h2 { margin: 0; color: #f8fafc; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+    
+    .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    label { font-size: 13px; color: #94a3b8; font-weight: bold; }
+    select, button { background: #1e293b; color: #f8fafc; border: 1px solid #334155; padding: 8px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    select:focus, button:focus { outline: none; border-color: #38bdf8; }
+    
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; margin-top: 15px; }
+    .tab-btn { background: #0f172a; border: 1px solid #1e293b; color: #94a3b8; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .tab-btn.active { background: #0284c7; color: white; border-color: #38bdf8; }
 
-    /* Tabla de Análisis BTC */
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
-    th { background-color: #0f172a; color: #94a3b8; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-    tr:hover { background-color: #334155; }
+    /* Tablas */
+    .table-container { overflow-x: auto; margin-top: 15px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid #1e293b; font-size: 13px; }
+    th { background-color: #0f172a; color: #94a3b8; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+    tr:hover { background-color: #1e293b; }
     
-    .badge { padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; color: white; display: inline-block; }
-    .bullish { background-color: #16a34a; } /* BTC Sube */
-    .bearish { background-color: #dc2626; } /* BTC Baja */
-    .neutral { background-color: #64748b; } /* Neutral */
-    
-    .btc-impact-high { color: #f59e0b; font-weight: bold; }
-    .date-column { font-weight: bold; color: #cbd5e1; white-space: nowrap; }
+    /* Badges de Impacto e IA */
+    .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
+    .imp-high { background: rgba(220, 38, 38, 0.2); color: #f87171; border: 1px solid #ef4444; }
+    .imp-medium { background: rgba(217, 119, 6, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+    .imp-low { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
 
-    /* Widget Tradays */
+    .ai-signal { padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; }
+    .bullish { background: #15803d; color: #dcfce7; } /* Sube */
+    .bearish { background: #b91c1c; color: #fee2e2; } /* Baja */
+    .neutral { background: #475569; color: #f1f5f9; }
+
+    /* Simulador de Ingreso */
+    .update-box { display: flex; gap: 10px; align-items: center; margin-top: 15px; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed #334155; }
+    
+    /* Widget */
     .calendar-widget-container { width: 100%; height: 600px; position: relative; }
     #economicCalendarWidget { width: 100%; height: 100%; }
     .ecw-copyright { font-size: 11px; color: #64748b; margin-top: 6px; text-align: right; }
     .ecw-copyright a { color: #38bdf8; text-decoration: none; }
-    .ecw-copyright a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
 <div class="container">
 
-  <!-- SECCIÓN 1: Noticias Macro y Cripto que afectan a Bitcoin -->
+  <!-- DASHBOARD PRINCIPAL -->
   <div class="card">
-    <h2>⚡ Eventos Clave de Alto Impacto para Bitcoin (BTC)</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Hora</th>
-          <th>Origen</th>
-          <th>Evento / Noticia BTC</th>
-          <th>Previo</th>
-          <th>Previsión</th>
-          <th>Actual</th>
-          <th>Sesgo Esperado en BTC</th>
-        </tr>
-      </thead>
-      <tbody id="btcAnalysisBody">
-        <!-- Inyectado dinámicamente -->
-      </tbody>
-    </table>
+    <div class="dashboard-header">
+      <h2>⚡ Dashboard Macro & Cripto AI (BTC)</h2>
+      
+      <!-- FILTROS -->
+      <div class="controls">
+        <label for="importanceFilter">Importancia:</label>
+        <select id="importanceFilter" onchange="renderDashboard()">
+          <option value="ALL">Todas las Importancias</option>
+          <option value="HIGH">🔴 Alta Importancia</option>
+          <option value="MEDIUM">🟡 Media Importancia</option>
+          <option value="LOW">🟢 Baja Importancia</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- PESTAÑAS -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tabPendingBtn" onclick="switchTab('PENDING')">Pendientes (<span id="pendingCount">0</span>)</button>
+      <button class="tab-btn" id="tabUpdatedBtn" onclick="switchTab('UPDATED')">Noticias Actualizadas / Análisis AI (<span id="updatedCount">0</span>)</button>
+    </div>
+
+    <!-- TABLA PENDIENTES -->
+    <div id="pendingView" class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Origen</th>
+            <th>Noticia / Evento</th>
+            <th>Importancia</th>
+            <th>Previo</th>
+            <th>Previsión</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="pendingTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- TABLA ACTUALIZADAS CON ANÁLISIS IA -->
+    <div id="updatedView" class="table-container" style="display: none;">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Evento</th>
+            <th>Importancia</th>
+            <th>Previsión</th>
+            <th>Dato Actual</th>
+            <th>Análisis Algorítmico AI</th>
+            <th>Predicción BTC</th>
+          </tr>
+        </thead>
+        <tbody id="updatedTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- SIMULADOR INTERACTIVO PARA ACTUALIZAR RESULTADO -->
+    <div class="update-box">
+      <span style="font-size: 13px; color: #94a3b8; font-weight: bold;">🧪 Simular actualización de noticia:</span>
+      <select id="simEventSelect"></select>
+      <input type="number" id="simActualValue" placeholder="Nuevo valor actual" step="0.01" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:6px 10px; border-radius:4px; width:140px;">
+      <button onclick="simulateNewsUpdate()" style="background:#0284c7; color:white; border:none;">Actualizar Dato</button>
+    </div>
   </div>
 
-  <!-- SECCIÓN 2: Widget Oficial para Monitoreo General -->
+  <!-- WIDGET INTEGRADO OFICIAL -->
   <div class="card">
-    <h2>📅 Calendario Económico Global (MQL5 / Tradays)</h2>
+    <h2>📅 Calendario Económico en Vivo (MQL5 / Tradays)</h2>
     <div class="calendar-widget-container">
       <div id="economicCalendarWidget"></div>
       <div class="ecw-copyright">
@@ -77,73 +145,60 @@
 </div>
 
 <script>
-  // Eventos económicos y regulatorios con mayor sensibilidad en BTC
-  const btcEvents = [
-    { 
-      date: "2026-10-20", 
-      time: "14:00", 
-      origin: "FED / USD", 
-      event: "Decisión de Tipos de Interés (FOMC)", 
-      previous: "5.25%", 
-      forecast: 5.00, 
-      actual: 4.75, 
-      inverse: true // Menor tasa/inflación = Alcista para BTC
-    },
-    { 
-      date: "2026-10-21", 
-      time: "08:30", 
-      origin: "IPC / USD", 
-      event: "Índice de Precios al Consumidor (IPC EE.UU.)", 
-      previous: "3.1%", 
-      forecast: 2.9, 
-      actual: 3.2, 
-      inverse: true // Menor inflación de lo previsto = Alcista para BTC
-    },
-    { 
-      date: "2026-10-22", 
-      time: "08:30", 
-      origin: "NFP / USD", 
-      event: "Nóminas No Agrícolas (Empleo EE.UU.)", 
-      previous: "180K", 
-      forecast: 150, 
-      actual: 140, 
-      inverse: true // Mercado laboral débil = Expectativa de bajas de tasa = BTC Sube
-    },
-    { 
-      date: "2026-10-23", 
-      time: "16:00", 
-      origin: "SEC / ETF", 
-      event: "Aprobación Flujos Entradas ETF Spot Bitcoin", 
-      previous: "+$120M", 
-      forecast: 200, 
-      actual: null, 
-      inverse: false // Mayor entrada a ETFs = Alcista directo
-    }
+  // Base de datos de eventos para Bitcoin
+  let newsDatabase = [
+    { id: 1, date: "2026-10-20", time: "14:00", origin: "FED", event: "Decisión de Tipos de Interés (FOMC)", importance: "HIGH", previous: "5.25%", forecast: 5.00, actual: null, inverse: true },
+    { id: 2, date: "2026-10-21", time: "08:30", origin: "USD", event: "Índice de Precios al Consumidor (IPC)", importance: "HIGH", previous: "3.1%", forecast: 2.9, actual: null, inverse: true },
+    { id: 3, date: "2026-10-22", time: "08:30", origin: "USD", event: "Nóminas No Agrícolas (NFP)", importance: "MEDIUM", previous: "180K", forecast: 150, actual: null, inverse: true },
+    { id: 4, date: "2026-10-23", time: "16:00", origin: "ETF", event: "Entradas Netas ETF Bitcoin Spot", importance: "HIGH", previous: "+$120M", forecast: 200, actual: null, inverse: false },
+    { id: 5, date: "2026-10-24", time: "10:00", origin: "USD", event: "Ventas de Viviendas de Segunda Mano", importance: "LOW", previous: "4.0M", forecast: 4.1, actual: null, inverse: true },
+    // Noticia con dato ya salido para demostración de la IA
+    { id: 6, date: "2026-10-19", time: "09:00", origin: "SEC", event: "Aprobación de Licencias Cripto UE", importance: "MEDIUM", previous: "10", forecast: 12, actual: 18, inverse: false }
   ];
 
-  // Lógica de impacto para Bitcoin
-  function evaluateBtcImpact(item) {
-    if (item.actual === null || item.actual === undefined) {
-      return { label: "Pendiente", cssClass: "neutral" };
-    }
+  let currentTab = "PENDING";
 
-    // Para noticias donde un menor dato es positivo para BTC (ej: tasas, inflación)
-    if (item.inverse) {
-      if (item.actual < item.forecast) {
-        return { label: "▲ Alcista (BTC Sube)", cssClass: "bullish" };
-      } else if (item.actual > item.forecast) {
-        return { label: "▼ Bajista (BTC Baja)", cssClass: "bearish" };
-      }
+  // Motor tipo IA para evaluar la dirección de Bitcoin
+  function runAIAnalysis(eventItem) {
+    const { actual, forecast, inverse } = eventItem;
+    if (actual === null) return { text: "Esperando dato...", class: "neutral", prediction: "NEUTRAL" };
+
+    let isPositive = false;
+    if (inverse) {
+      // Si menor inflación/tasa => Positivo para BTC
+      isPositive = actual < forecast;
     } else {
-      // Para noticias donde mayor dato es positivo para BTC (ej: adopción, entradas ETF)
-      if (item.actual > item.forecast) {
-        return { label: "▲ Alcista (BTC Sube)", cssClass: "bullish" };
-      } else if (item.actual < item.forecast) {
-        return { label: "▼ Bajista (BTC Baja)", cssClass: "bearish" };
-      }
+      // Si mayor entrada de capital/adopción => Positivo para BTC
+      isPositive = actual > forecast;
     }
 
-    return { label: "▬ Neutral", cssClass: "neutral" };
+    if (actual === forecast) {
+      return {
+        text: "Dato según lo previsto. Impacto moderado.",
+        class: "neutral",
+        prediction: "▬ NEUTRAL"
+      };
+    }
+
+    if (isPositive) {
+      return {
+        text: `Dato favorable (${actual} vs ${forecast} prev). La liquidez/adopción beneficia a Bitcoin.`,
+        class: "bullish",
+        prediction: "▲ ALCISTA (BTC Sube)"
+      };
+    } else {
+      return {
+        text: `Dato desfavorable (${actual} vs ${forecast} prev). Restricción de liquidez afecta a BTC.`,
+        class: "bearish",
+        prediction: "▼ BAJISTA (BTC Baja)"
+      };
+    }
+  }
+
+  function getImportanceBadge(imp) {
+    if (imp === 'HIGH') return `<span class="badge imp-high">🔴 Alta</span>`;
+    if (imp === 'MEDIUM') return `<span class="badge imp-medium">🟡 Media</span>`;
+    return `<span class="badge imp-low">🟢 Baja</span>`;
   }
 
   function formatDate(dateStr) {
@@ -151,29 +206,97 @@
     return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
-  function renderBtcTable() {
-    const tbody = document.getElementById("btcAnalysisBody");
-    tbody.innerHTML = "";
+  function renderDashboard() {
+    const filter = document.getElementById("importanceFilter").value;
+    const pendingTbody = document.getElementById("pendingTableBody");
+    const updatedTbody = document.getElementById("updatedTableBody");
+    const simSelect = document.getElementById("simEventSelect");
 
-    btcEvents.forEach(item => {
-      const result = evaluateBtcImpact(item);
-      const row = document.createElement("tr");
+    pendingTbody.innerHTML = "";
+    updatedTbody.innerHTML = "";
+    simSelect.innerHTML = "";
 
-      row.innerHTML = `
-        <td class="date-column">${formatDate(item.date)}</td>
-        <td>${item.time}</td>
-        <td><strong>${item.origin}</strong></td>
-        <td><span class="btc-impact-high">${item.event}</span></td>
-        <td>${item.previous}</td>
-        <td>${item.forecast}</td>
-        <td><strong>${item.actual !== null ? item.actual : 'N/A'}</strong></td>
-        <td><span class="badge ${result.cssClass}">${result.label}</span></td>
-      `;
-      tbody.appendChild(row);
+    let pendingCount = 0;
+    let updatedCount = 0;
+
+    newsDatabase.forEach(item => {
+      // Aplicar filtro de importancia
+      if (filter !== "ALL" && item.importance !== filter) return;
+
+      if (item.actual === null) {
+        // Noticia Pendiente
+        pendingCount++;
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${formatDate(item.date)}</td>
+          <td>${item.time}</td>
+          <td><strong>${item.origin}</strong></td>
+          <td>${item.event}</td>
+          <td>${getImportanceBadge(item.importance)}</td>
+          <td>${item.previous}</td>
+          <td>${item.forecast}</td>
+          <td><span class="badge neutral">Pendiente</span></td>
+        `;
+        pendingTbody.appendChild(row);
+
+        // Añadir a las opciones de simulación
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = `[${item.importance}] ${item.event}`;
+        simSelect.appendChild(opt);
+
+      } else {
+        // Noticia Actualizada con análisis
+        updatedCount++;
+        const aiResult = runAIAnalysis(item);
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${formatDate(item.date)}</td>
+          <td>${item.time}</td>
+          <td><strong>${item.event}</strong></td>
+          <td>${getImportanceBadge(item.importance)}</td>
+          <td>${item.forecast}</td>
+          <td><strong>${item.actual}</strong></td>
+          <td style="color:#cbd5e1; font-size: 12px;">${aiResult.text}</td>
+          <td><span class="ai-signal ${aiResult.class}">${aiResult.prediction}</span></td>
+        `;
+        updatedTbody.appendChild(row);
+      }
     });
+
+    document.getElementById("pendingCount").textContent = pendingCount;
+    document.getElementById("updatedCount").textContent = updatedCount;
   }
 
-  document.addEventListener("DOMContentLoaded", renderBtcTable);
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById("tabPendingBtn").classList.toggle("active", tab === 'PENDING');
+    document.getElementById("tabUpdatedBtn").classList.toggle("active", tab === 'UPDATED');
+    
+    document.getElementById("pendingView").style.display = tab === 'PENDING' ? 'block' : 'none';
+    document.getElementById("updatedView").style.display = tab === 'UPDATED' ? 'block' : 'none';
+  }
+
+  // Permite ingresar el nuevo resultado de la noticia en tiempo real
+  function simulateNewsUpdate() {
+    const selectedId = parseInt(document.getElementById("simEventSelect").value);
+    const newValue = parseFloat(document.getElementById("simActualValue").value);
+
+    if (isNaN(selectedId) || isNaN(newValue)) {
+      alert("Por favor selecciona una noticia y escribe un valor numérico actual.");
+      return;
+    }
+
+    const item = newsDatabase.find(n => n.id === selectedId);
+    if (item) {
+      item.actual = newValue;
+      renderDashboard();
+      switchTab("UPDATED"); // Cambiar automáticamente a la pestaña de actualizadas
+      document.getElementById("simActualValue").value = "";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", renderDashboard);
 </script>
 
 </body>
