@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Macro EE.UU. - Impacto por Bloque Horario en BTC</title>
+  <title>Dashboard Macro EE.UU. - Bloques con Fecha & AI BTC</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #e2e8f0; margin: 0; padding: 20px; }
@@ -13,17 +13,17 @@
     .dashboard-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid #2a3447; padding-bottom: 15px; }
     h2 { margin: 0; color: #f8fafc; font-size: 20px; display: flex; align-items: center; gap: 10px; }
 
-    /* Estilos de Bloques Horarios */
+    /* Estilos de Bloques Horarios con Fecha */
     .block-card { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px; margin-top: 16px; }
-    .block-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 10px; margin-bottom: 12px; }
-    .time-badge { background: #0284c7; color: #fff; font-weight: bold; padding: 4px 12px; border-radius: 20px; font-size: 14px; }
+    .block-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
     
-    /* Resumen de Impacto Neto del Bloque */
+    .date-badge { background: #334155; color: #38bdf8; font-weight: bold; padding: 4px 10px; border-radius: 6px; font-size: 13px; border: 1px solid #0284c7; }
+    .time-badge { background: #0284c7; color: #fff; font-weight: bold; padding: 4px 12px; border-radius: 6px; font-size: 13px; }
+    
     .block-summary { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 12px; }
     .summary-title { font-size: 12px; text-transform: uppercase; color: #94a3b8; font-weight: bold; letter-spacing: 0.5px; }
     .summary-impact { font-size: 14px; font-weight: bold; margin-top: 4px; color: #f8fafc; }
 
-    /* Tablas dentro del bloque */
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th, td { padding: 8px 12px; border-bottom: 1px solid #1e293b; font-size: 13px; }
     th { color: #94a3b8; font-size: 11px; text-transform: uppercase; }
@@ -38,7 +38,8 @@
     .bearish { background: #b91c1c; color: #fee2e2; }
     .neutral { background: #475569; color: #f1f5f9; }
 
-    /* Widget Tradays */
+    .update-box { display: flex; gap: 10px; align-items: center; margin-top: 15px; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed #334155; flex-wrap: wrap; }
+
     .calendar-widget-container { width: 100%; height: 600px; position: relative; }
     #economicCalendarWidget { width: 100%; height: 100%; }
     .ecw-copyright { font-size: 11px; color: #64748b; margin-top: 6px; text-align: right; }
@@ -49,14 +50,22 @@
 
 <div class="container">
 
-  <!-- DASHBOARD DE BLOQUES HORARIOS -->
+  <!-- DASHBOARD DE BLOQUES CON FECHAS -->
   <div class="card">
     <div class="dashboard-header">
-      <h2>⏰ Análisis de Impacto Neto por Bloque Horario en Bitcoin (BTC)</h2>
+      <h2>📅 Bloques Horarios por Fecha & Impacto en Bitcoin (BTC)</h2>
+    </div>
+
+    <!-- SIMULADOR INTERACTIVO -->
+    <div class="update-box">
+      <span style="font-size: 13px; color: #94a3b8; font-weight: bold;">🧪 Simular o Registrar Dato Publicado:</span>
+      <select id="simEventSelect"></select>
+      <input type="number" id="simActualValue" placeholder="Nuevo valor publicado" step="0.01" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:6px 10px; border-radius:4px; width:160px;">
+      <button onclick="simulateNewsUpdate()" style="background:#0284c7; color:white; border:none; cursor:pointer;">Procesar con IA</button>
     </div>
 
     <div id="blocksContainer">
-      <!-- Los bloques horarios se agruparán dinámicamente aquí -->
+      <!-- Los bloques clasificados por Fecha y Hora se renderizan aquí -->
     </div>
   </div>
 
@@ -77,40 +86,36 @@
 </div>
 
 <script>
-  // Base de datos de eventos agrupados
-  const newsDatabase = [
-    // Bloque 06:30 AM (Ya publicado)
-    { time: "06:30", event: "Inicios de construcción de Nueva Vivienda", importance: "MEDIUM", affectsBTC: true, forecast: 1.468, actual: 1.221, inverse: true },
-    { time: "06:30", event: "Permisos de Construcción", importance: "MEDIUM", affectsBTC: true, forecast: 1.441, actual: 1.400, inverse: true },
-    { time: "06:30", event: "Inicios de Construcción m/m", importance: "LOW", affectsBTC: false, forecast: -14.0, actual: -5.2, inverse: false },
-    { time: "06:30", event: "Permisos de Construcción m/m", importance: "LOW", affectsBTC: false, forecast: 1.2, actual: -0.2, inverse: false },
+  // Eventos estructurados con fecha explícita (YYYY-MM-DD)
+  let newsDatabase = [
+    // 📅 HOY: 20/10/2026 - 06:30 AM (Ya salieron)
+    { id: 1, date: "2026-10-20", time: "06:30", event: "Inicios de construcción de Nueva Vivienda", importance: "MEDIUM", affectsBTC: true, forecast: 1.468, actual: 1.221, inverse: true },
+    { id: 2, date: "2026-10-20", time: "06:30", event: "Permisos de Construcción", importance: "MEDIUM", affectsBTC: true, forecast: 1.441, actual: 1.400, inverse: true },
+    { id: 3, date: "2026-10-20", time: "06:30", event: "Inicios de Construcción m/m", importance: "LOW", affectsBTC: false, forecast: -14.0, actual: -5.2, inverse: false },
+    { id: 4, date: "2026-10-20", time: "06:30", event: "Permisos de Construcción m/m", importance: "LOW", affectsBTC: false, forecast: 1.2, actual: -0.2, inverse: false },
 
-    // Bloque 08:00 AM
-    { time: "08:00", event: "Ventas de Viviendas Pendientes m/m", importance: "MEDIUM", affectsBTC: true, forecast: -0.9, actual: -1.2, inverse: true },
-    { time: "08:00", event: "Ventas de Viviendas Pendientes a/a", importance: "LOW", affectsBTC: false, forecast: 0.7, actual: 0.5, inverse: false },
-    { time: "08:00", event: "Índice de Ventas de Viviendas Pendientes", importance: "MEDIUM", affectsBTC: true, forecast: 70.5, actual: 69.8, inverse: true },
+    // 📅 HOY: 20/10/2026 - 08:00 AM (PENDIENTES)
+    { id: 5, date: "2026-10-20", time: "08:00", event: "Ventas de Viviendas Pendientes m/m", importance: "MEDIUM", affectsBTC: true, forecast: -0.9, actual: null, inverse: true },
+    { id: 6, date: "2026-10-20", time: "08:00", event: "Ventas de Viviendas Pendientes a/a", importance: "LOW", affectsBTC: false, forecast: 0.7, actual: null, inverse: false },
+    { id: 7, date: "2026-10-20", time: "08:00", event: "Índice de Ventas de Viviendas Pendientes", importance: "MEDIUM", affectsBTC: true, forecast: 70.5, actual: null, inverse: true },
 
-    // Bloque 08:30 AM (Ejemplo futuro)
-    { time: "08:30", event: "Índice de Precios al Consumidor (IPC Subyacente m/m)", importance: "HIGH", affectsBTC: true, forecast: 0.3, actual: null, inverse: true },
-    { time: "08:30", event: "IPC General a/a", importance: "HIGH", affectsBTC: true, forecast: 2.9, actual: null, inverse: true },
-    { time: "08:30", event: "Nuevas Peticiones de Subsidio por Desempleo", importance: "MEDIUM", affectsBTC: true, forecast: 215, actual: null, inverse: true }
+    // 📅 MAÑANA: 21/10/2026 - 08:30 AM (PENDIENTES)
+    { id: 8, date: "2026-10-21", time: "08:30", event: "Índice de Precios al Consumidor (IPC m/m)", importance: "HIGH", affectsBTC: true, forecast: 0.3, actual: null, inverse: true },
+    { id: 9, date: "2026-10-21", time: "08:30", event: "IPC General a/a", importance: "HIGH", affectsBTC: true, forecast: 2.9, actual: null, inverse: true }
   ];
 
-  // Evalúa el impacto individual de cada línea
   function evaluateIndividual(item) {
-    if (item.actual === null) return { text: "Pendiente", signal: "neutral" };
+    if (item.actual === null) return { text: "⏳ Pendiente", signal: "neutral" };
     
     let isPositive = item.inverse ? (item.actual < item.forecast) : (item.actual > item.forecast);
     if (item.actual === item.forecast) return { text: "▬ En previsión", signal: "neutral" };
     return isPositive ? { text: "▲ Alcista", signal: "bullish" } : { text: "▼ Bajista", signal: "bearish" };
   }
 
-  // Analiza el EFECTO NETO del bloque completo para BTC
   function calculateBlockImpact(events) {
     let bullishCount = 0;
     let bearishCount = 0;
     let pendingCount = 0;
-    let highImpactCount = 0;
 
     events.forEach(e => {
       if (e.actual === null) {
@@ -119,53 +124,77 @@
         const res = evaluateIndividual(e);
         if (res.signal === "bullish") bullishCount++;
         if (res.signal === "bearish") bearishCount++;
-        if (e.importance === "HIGH") highImpactCount++;
       }
     });
 
     if (pendingCount === events.length) {
       return {
-        summary: "⏳ Bloque Pendiente de Publicación. El mercado se mantendrá en rango previo al dato.",
-        badge: "PENDIENTE",
+        summary: "⏳ Bloque Pendiente de Publicación. Esperando salida de datos oficiales.",
+        badge: "⏳ PENDIENTE DE DATOS",
+        css: "neutral"
+      };
+    }
+
+    if (pendingCount > 0) {
+      return {
+        summary: `🔄 Publicación Parcial (${events.length - pendingCount}/${events.length} salidos). Aguardando el resto de datos del bloque.`,
+        badge: "🔄 EN PROCESO",
         css: "neutral"
       };
     }
 
     if (bullishCount > bearishCount) {
       return {
-        summary: `▲ IMPACTO NETO ALCISTA PARA BITCOIN: El conjunto de datos de este bloque frena la presión inflacionaria/macro. Se espera impulso alcista en BTC/USD.`,
+        summary: `▲ IMPACTO NETO ALCISTA PARA BITCOIN: Los datos publicados reducen la presión inflacionaria/macro. Sesgo favorable en BTC/USD.`,
         badge: "▲ ALCISTA EN BTC",
         css: "bullish"
       };
     } else if (bearishCount > bullishCount) {
       return {
-        summary: `▼ IMPACTO NETO BAJISTA PARA BITCOIN: El resultado combinado de este bloque muestra fortaleza macro o presión en tasas. Se espera corrección a la baja en BTC/USD.`,
+        summary: `▼ IMPACTO NETO BAJISTA PARA BITCOIN: Los datos publicados muestran solidez económica o presión en tasas. Sesgo bajista en BTC/USD.`,
         badge: "▼ BAJISTA EN BTC",
         css: "bearish"
       };
     } else {
       return {
-        summary: `▬ IMPACTO MIXTO / NEUTRAL: Los datos del bloque se compensan entre sí o salieron exactamente en línea con lo esperado. Movimiento lateral o volatilidad en ambas direcciones.`,
+        summary: `▬ IMPACTO MIXTO / NEUTRAL: Los datos se compensan entre sí o salieron exactamente según el pronóstico.`,
         badge: "▬ NEUTRAL / MIXTO",
         css: "neutral"
       };
     }
   }
 
+  function formatDate(dateStr) {
+    const d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
   function renderTimeBlocks() {
     const container = document.getElementById("blocksContainer");
+    const simSelect = document.getElementById("simEventSelect");
     container.innerHTML = "";
+    simSelect.innerHTML = "";
 
-    // Agrupar eventos por hora exactas
-    const grouped = {};
-    newsDatabase.forEach(item => {
-      if (!grouped[item.time]) grouped[item.time] = [];
-      grouped[item.time].push(item);
+    // Llenar selector de simulación
+    newsDatabase.filter(n => n.actual === null).forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.id;
+      opt.textContent = `[${formatDate(item.date)} - ${item.time}] ${item.event}`;
+      simSelect.appendChild(opt);
     });
 
-    // Renderizar un bloque visual por cada hora
-    Object.keys(grouped).forEach(time => {
-      const events = grouped[time];
+    // Agrupar por FECHA + HORA (Llave única: "2026-10-20_08:00")
+    const grouped = {};
+    newsDatabase.forEach(item => {
+      const groupKey = `${item.date}_${item.time}`;
+      if (!grouped[groupKey]) grouped[groupKey] = [];
+      grouped[groupKey].push(item);
+    });
+
+    Object.keys(grouped).forEach(key => {
+      const events = grouped[key];
+      const blockDate = events[0].date;
+      const blockTime = events[0].time;
       const blockImpact = calculateBlockImpact(events);
 
       const blockDiv = document.createElement("div");
@@ -183,7 +212,7 @@
             <td>${btcTag}</td>
             <td>${impBadge}</td>
             <td>${e.forecast ?? 'N/A'}</td>
-            <td><strong>${e.actual ?? 'Pendiente'}</strong></td>
+            <td><strong>${e.actual ?? 'Esperando...'}</strong></td>
             <td><span class="ai-signal ${ind.signal}">${ind.text}</span></td>
           </tr>
         `;
@@ -192,7 +221,8 @@
       blockDiv.innerHTML = `
         <div class="block-header">
           <div>
-            <span class="time-badge">⏰ Bloque de las ${time}</span>
+            <span class="date-badge">📅 ${formatDate(blockDate)}</span>
+            <span class="time-badge" style="margin-left: 6px;">⏰ Bloque de las ${blockTime}</span>
             <span style="font-size:13px; color:#94a3b8; margin-left:10px;">(${events.length} noticias en este bloque)</span>
           </div>
           <span class="ai-signal ${blockImpact.css}">${blockImpact.badge}</span>
@@ -215,13 +245,30 @@
         </table>
 
         <div class="block-summary" style="border-left-color: ${blockImpact.css === 'bullish' ? '#16a34a' : (blockImpact.css === 'bearish' ? '#dc2626' : '#64748b')};">
-          <div class="summary-title">Conclusión de Inteligencia Macro para el Bloque de las ${time}:</div>
+          <div class="summary-title">Conclusión de Inteligencia Macro (${formatDate(blockDate)} — ${blockTime}):</div>
           <div class="summary-impact">${blockImpact.summary}</div>
         </div>
       `;
 
       container.appendChild(blockDiv);
     });
+  }
+
+  function simulateNewsUpdate() {
+    const selectedId = parseInt(document.getElementById("simEventSelect").value);
+    const newValue = parseFloat(document.getElementById("simActualValue").value);
+
+    if (isNaN(selectedId) || isNaN(newValue)) {
+      alert("Selecciona un evento e ingresa el valor publicado.");
+      return;
+    }
+
+    const item = newsDatabase.find(n => n.id === selectedId);
+    if (item) {
+      item.actual = newValue;
+      renderTimeBlocks();
+      document.getElementById("simActualValue").value = "";
+    }
   }
 
   document.addEventListener("DOMContentLoaded", renderTimeBlocks);
