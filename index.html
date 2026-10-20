@@ -131,7 +131,7 @@
   </div>
 
   <script>
-    // 1. Reloj en tiempo real (se actualiza cada segundo)
+    // 1. Reloj en tiempo real
     function updateClock() {
       const now = new Date();
       document.getElementById('clock').innerText = now.toLocaleTimeString();
@@ -139,62 +139,69 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // 2. Consulta y renderizado de datos filtrados exclusivamente para USD
+    // 2. Consulta de eventos usando Proxy CORS
     async function fetchUsdEvents() {
       const today = new Date().toISOString().split('T')[0];
       const tbody = document.getElementById('events-table-body');
 
-      try {
-        // Endpoint público de eventos económicos filtrado por USD
-        const response = await fetch(`https://www.tradays.com/en/economic-calendar/widget/events?currency=USD&from=${today}&to=${today}`);
-        
-        if (!response.ok) throw new Error('Error al obtener datos');
-        
-        const events = await response.json();
+      // Endpoint original de Tradays
+      const targetUrl = `https://www.tradays.com/en/economic-calendar/widget/events?currency=USD&from=${today}&to=${today}`;
+      
+      // Proxy público para saltarse la restricción CORS
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
 
-        if (events.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No hay eventos macroeconómicos de USD programados para hoy.</td></tr>`;
+      try {
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error('Error de red');
+
+        const data = await response.json();
+        const events = JSON.parse(data.contents);
+
+        if (!Array.isArray(events) || events.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #94a3b8;">No hay eventos macroeconómicos de USD programados para hoy.</td></tr>`;
           return;
         }
 
         tbody.innerHTML = events.map(event => {
-          const time = new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const eventDate = new Date(event.date || event.date_utc);
+          const time = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           
           let impactText = 'Bajo';
           let impactClass = 'importance-low';
           if (event.importance === 3) { impactText = 'Alta (BTC)'; impactClass = 'importance-high'; }
           else if (event.importance === 2) { impactText = 'Media'; impactClass = 'importance-med'; }
 
-          const actualClass = event.actual > event.forecast ? 'positive' : (event.actual < event.forecast ? 'negative' : '');
+          const actualVal = event.actual ?? '--';
+          const forecastVal = event.forecast ?? '--';
+          const previousVal = event.previous ?? '--';
 
           return `
             <tr>
               <td>${time}</td>
               <td><span class="flag">🇺🇸 USD</span></td>
-              <td><strong>${event.name}</strong></td>
+              <td><strong>${event.name || event.title}</strong></td>
               <td class="${impactClass}">${impactText}</td>
-              <td class="${actualClass}">${event.actual ?? '--'}</td>
-              <td>${event.forecast ?? '--'}</td>
-              <td>${event.previous ?? '--'}</td>
+              <td>${actualVal}</td>
+              <td>${forecastVal}</td>
+              <td>${previousVal}</td>
             </tr>
           `;
         }).join('');
 
       } catch (error) {
-        // En caso de bloqueo CORS o error de red en entorno local, muestra un estado claro
         tbody.innerHTML = `
           <tr>
-            <td colspan="7" style="text-align:center; color: #f59e0b;">
-              Para consultar datos directos vía API sin restricciones de navegador, se requiere ejecutar este código desde un servidor web o backend local.
+            <td colspan="7" style="text-align:center; color: #ef4444;">
+              Error al actualizar los datos. Reintentando en breve...
             </td>
           </tr>
         `;
       }
     }
 
-    // Carga inicial y actualización automática cada 30 segundos
+    // Consulta inicial y actualización periódica
     fetchUsdEvents();
-    setInterval(fetchUsdEvents, 30000);
+    setInterval(fetchUsdEvents, 10000); // Se actualiza cada 10 segundos
   </script>
 </body>
 </html>
