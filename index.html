@@ -3,79 +3,132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario Económico con Análisis</title>
+  <title>Calendario Económico con Análisis Directivo</title>
   <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 20px; }
-    .calendar-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-    th { background-color: #2c3e50; color: white; }
-    .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; display: inline-block; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+    .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+    
+    .card { background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    h2 { margin-top: 0; color: #2c3e50; font-size: 20px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
+
+    /* Widget de Tradays */
+    .calendar-widget-container { width: 100%; height: 650px; position: relative; }
+    #economicCalendarWidget { width: 100%; height: 100%; }
+    .ecw-copyright { font-size: 11px; color: #888; margin-top: 6px; text-align: right; }
+    .ecw-copyright a { color: #0066cc; text-decoration: none; }
+    .ecw-copyright a:hover { text-decoration: underline; }
+
+    /* Tabla de Análisis */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    th { background-color: #2c3e50; color: white; font-size: 14px; }
+    tr:hover { background-color: #f8fafc; }
+    
+    .badge { padding: 6px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; color: white; display: inline-block; }
     .bullish { background-color: #27ae60; } /* Sube */
     .bearish { background-color: #e74c3c; } /* Baja */
-    .neutral { background-color: #7f8c8d; } /* Neutral */
+    .neutral { background-color: #7f8c8d; } /* Neutral / Sin cambios */
     .high-impact { color: #d35400; font-weight: bold; }
+    .date-column { font-weight: bold; color: #34495e; white-space: nowrap; }
   </style>
 </head>
 <body>
 
-<div class="calendar-card">
-  <h2>Calendario Económico con Análisis Directivo</h2>
-  <table id="newsTable">
-    <thead>
-      <tr>
-        <th>Hora</th>
-        <th>Divisa</th>
-        <th>Evento</th>
-        <th>Previo</th>
-        <th>Previsión</th>
-        <th>Actual</th>
-        <th>Análisis / Sesgo</th>
-      </tr>
-    </thead>
-    <tbody id="calendarBody">
-      <!-- Datos inyectados dinámicamente -->
-    </tbody>
-  </table>
+<div class="container">
+
+  <!-- SECCIÓN 1: Tabla con Análisis y Sesgo Market Impact -->
+  <div class="card">
+    <h2>Análisis Técnico y Sesgo de Noticias (Sube / Baja)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Divisa</th>
+          <th>Evento Económico</th>
+          <th>Previo</th>
+          <th>Previsión</th>
+          <th>Actual</th>
+          <th>Análisis / Sesgo</th>
+        </tr>
+      </thead>
+      <tbody id="analysisTableBody">
+        <!-- Generado dinámicamente -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECCIÓN 2: Widget Oficial de Tradays / MetaTrader -->
+  <div class="card">
+    <h2>Calendario Económico Oficial</h2>
+    <div class="calendar-widget-container">
+      <div id="economicCalendarWidget"></div>
+      <div class="ecw-copyright">
+        <a href="https://www.metatrader.com/?utm_source=calendar.widget&utm_medium=link&utm_term=economic.calendar&utm_content=visit.mql5.calendar&utm_campaign=202.calendar.widget" rel="noopener nofollow" target="_blank">MetaTrader World Markets</a>
+      </div>
+      <script async type="text/javascript" data-type="calendar-widget" src="https://www.tradays.com/c/js/widgets/calendar/widget.js?v=15">
+        {"width":"100%","height":"100%","mode":"2","fw":"html","lang":"es"}
+      </script>
+    </div>
+  </div>
+
 </div>
 
 <script>
-  // Datos de prueba simulando la API de eventos económicos
-  const economicEvents = [
-    { time: "08:30", currency: "USD", event: "Nóminas No Agrícolas (NFP)", previous: 150, forecast: 180, actual: 220, impact: "High" },
-    { time: "10:00", currency: "USD", event: "Ventas de Viviendas Pendientes", previous: 0.8, forecast: 1.0, actual: 0.5, impact: "Medium" },
-    { time: "14:00", currency: "EUR", event: "Decisión de Tipos de Interés BCE", previous: 4.25, forecast: 4.25, actual: 4.25, impact: "High" }
+  // Datos estructurados con Fecha, Hora e Impacto
+  const newsEvents = [
+    { date: "2026-10-20", time: "08:30", currency: "USD", event: "Nóminas No Agrícolas (NFP)", previous: "150K", forecast: 180, actual: 220, impact: "High" },
+    { date: "2026-10-20", time: "10:00", currency: "USD", event: "Ventas de Viviendas Pendientes", previous: "0.8%", forecast: 1.0, actual: 0.5, impact: "Medium" },
+    { date: "2026-10-21", time: "14:00", currency: "EUR", event: "Decisión de Tipos de Interés (BCE)", previous: "4.25%", forecast: 4.25, actual: 4.25, impact: "High" },
+    { date: "2026-10-22", time: "09:30", currency: "GBP", event: "Índice de Precios al Consumidor (IPC)", previous: "2.1%", forecast: 2.0, actual: null, impact: "High" }
   ];
 
-  function analyzeEvent(actual, forecast) {
-    if (actual === null || actual === undefined) return { text: "Pendiente", class: "neutral" };
-    if (actual > forecast) return { text: "▲ Alcista (Sube)", class: "bullish" };
-    if (actual < forecast) return { text: "▼ Bajista (Baja)", class: "bearish" };
-    return { text: "▬ Neutral", class: "neutral" };
+  // Lógica para determinar el sesgo del mercado
+  function evaluateImpact(actual, forecast) {
+    if (actual === null || actual === undefined) {
+      return { label: "Pendiente", cssClass: "neutral" };
+    }
+    if (actual > forecast) {
+      return { label: "▲ Alcista (Sube)", cssClass: "bullish" };
+    } else if (actual < forecast) {
+      return { label: "▼ Bajista (Baja)", cssClass: "bearish" };
+    } else {
+      return { label: "▬ Neutral", cssClass: "neutral" };
+    }
   }
 
-  function renderCalendar() {
-    const tbody = document.getElementById("calendarBody");
+  // Formateador de fechas a local es-ES (DD/MM/YYYY)
+  function formatDateString(isoDateStr) {
+    const dateObj = new Date(isoDateStr + "T00:00:00");
+    return dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  // Renderizado de tabla
+  function renderAnalysisTable() {
+    const tbody = document.getElementById("analysisTableBody");
     tbody.innerHTML = "";
 
-    economicEvents.forEach(item => {
-      const analysis = analyzeEvent(item.actual, item.forecast);
+    newsEvents.forEach(item => {
+      const result = evaluateImpact(item.actual, item.forecast);
       const row = document.createElement("tr");
 
       row.innerHTML = `
+        <td class="date-column">${formatDateString(item.date)}</td>
         <td>${item.time}</td>
         <td><strong>${item.currency}</strong></td>
         <td><span class="${item.impact === 'High' ? 'high-impact' : ''}">${item.event}</span></td>
         <td>${item.previous}</td>
         <td>${item.forecast}</td>
-        <td><strong>${item.actual ?? 'N/A'}</strong></td>
-        <td><span class="badge ${analysis.class}">${analysis.text}</span></td>
+        <td><strong>${item.actual !== null ? item.actual : 'N/A'}</strong></td>
+        <td><span class="badge ${result.cssClass}">${result.label}</span></td>
       `;
       tbody.appendChild(row);
     });
   }
 
-  renderCalendar();
+  // Inicializar al cargar el documento
+  document.addEventListener("DOMContentLoaded", renderAnalysisTable);
 </script>
 
 </body>
